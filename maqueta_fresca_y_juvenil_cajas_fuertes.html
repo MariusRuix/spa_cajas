@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeguriNova | Cajas Fuertes & Servicios Técnicos 24/7</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        indigo: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            600: '#6366f1',
+                            700: '#4f46e5',
+                            900: '#312e81',
+                        },
+                        whatsapp: {
+                            DEFAULT: '#25d366',
+                            hover: '#22c55e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-indigo-600 selection:text-white">
+
+    <!-- Barra Superior de Emergencias 24/7 -->
+    <div class="bg-indigo-900 text-white text-xs sm:text-sm py-2 px-4">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div class="flex items-center gap-2">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-whatsapp animate-ping"></span>
+                <span class="font-medium">Servicio de Aperturas y Emergencias Técnicas 24/7:</span>
+            </div>
+            <a href="tel:+34900987654" class="flex items-center gap-2 font-bold text-indigo-200 hover:text-white transition">
+                <i class="fa-solid fa-phone-volume text-sm"></i> +34 900 987 654
+            </a>
+        </div>
+    </div>
+
+    <!-- Header / Navegación -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg shadow-indigo-600/30">
+                    <i class="fa-solid fa-vault"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-black tracking-tight text-slate-900 block leading-none">SEGURI<span class="text-indigo-600">NOVA</span></span>
+                    <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Seguridad & Servicios</span>
+                </div>
+            </div>
+
+            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+                <a href="#inicio" class="hover:text-indigo-600 transition">Inicio</a>
+                <a href="#servicios" class="hover:text-indigo-600 transition">Servicios</a>
+                <a href="#catalogo" class="hover:text-indigo-600 transition">Cajas Fuertes</a>
+                <a href="#nosotros" class="hover:text-indigo-600 transition">Confianza</a>
+                <a href="#ubicacion" class="hover:text-indigo-600 transition">Ubicación</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <a href="https://wa.me/34900987654?text=Hola,%20necesito%20información%20sobre%20sus%20servicios%20de%20cajas%20fuertes." target="_blank" class="bg-whatsapp hover:bg-whatsapp-hover text-white font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-md shadow-whatsapp/20 transition transform hover:-translate-y-0.5">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span class="hidden sm:inline">WhatsApp 24/7</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="relative overflow-hidden py-20 lg:py-28 bg-gradient-to-b from-indigo-50/60 to-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                <span class="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+                    <i class="fa-solid fa-shield-halved"></i> Innovación en Seguridad Física
+                </span>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-tight">
+                    Protege tu patrimonio con <span class="text-indigo-600">expertos certificados</span>
+                </h1>
+                <p class="text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                    Venta de cajas fuertes de alta gama, mantenimiento preventivo y aperturas de emergencia sin daño. Soluciones rápidas, discretas y garantizadas para hogares y empresas.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+                    <a href="#catalogo" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-4 rounded-2xl shadow-xl shadow-indigo-600/30 transition transform hover:-translate-y-0.5 text-center flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-box-open"></i> Ver Catálogo
+                    </a>
+                    <a href="https://wa.me/34900987654?text=Hola,%20necesito%20asistencia%20urgente." target="_blank" class="w-full sm:w-auto bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 font-bold px-8 py-4 rounded-2xl shadow-sm transition text-center flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wrench text-indigo-600"></i> Servicio Urgente
+                    </a>
+                </div>
+                <div class="pt-6 grid grid-cols-3 gap-4 border-t border-slate-200 text-center lg:text-left">
+                    <div>
+                        <span class="block text-2xl font-black text-slate-900">+15 Años</span>
+                        <span class="text-xs text-slate-500 font-medium">De trayectoria</span>
+                    </div>
+                    <div>
+                        <span class="block text-2xl font-black text-slate-900">100%</span>
+                        <span class="text-xs text-slate-500 font-medium">Discreción</span>
+                    </div>
+                    <div>
+                        <span class="block text-2xl font-black text-slate-900">24/7</span>
+                        <span class="text-xs text-slate-500 font-medium">Emergencias</span>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-5 flex justify-center">
+                <div class="relative w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-6 shadow-xl shadow-slate-200/50">
+                    <div class="absolute -top-4 -right-4 bg-whatsapp text-white p-3 rounded-2xl shadow-lg shadow-whatsapp/30">
+                        <i class="fa-brands fa-whatsapp text-2xl"></i>
+                    </div>
+                    <div class="h-64 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-6 relative overflow-hidden group">
+                        <i class="fa-solid fa-vault text-8xl group-hover:scale-110 transition duration-300"></i>
+                    </div>
+                    <h3 class="font-bold text-xl text-slate-900 mb-1">Asistencia Técnica Inmediata</h3>
+                    <p class="text-sm text-slate-600 mb-6">¿Problemas con la combinación o cerradura digital? Un técnico especializado acude a tu ubicación.</p>
+                    <a href="https://wa.me/34900987654?text=Hola,%20tengo%20una%20emergencia%20con%20mi%20caja%20fuerte." target="_blank" class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 transition shadow">
+                        <i class="fa-solid fa-headset"></i> Contactar Técnico Ahora
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Servicios Técnicos -->
+    <section id="servicios" class="py-20 bg-white border-y border-slate-200/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-indigo-600 text-xs font-bold uppercase tracking-widest block mb-2">Especialistas en Campo</span>
+                <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-4">Servicios Técnicos Profesionales</h2>
+                <p class="text-slate-600 text-sm sm:text-base">Garantizamos la integridad de tus equipos de seguridad con herramientas de última generación y total confidencialidad.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Servicio 1 -->
+                <div class="bg-slate-50 border border-slate-200/80 p-8 rounded-3xl hover:shadow-xl hover:border-indigo-200 transition group flex flex-col justify-between">
+                    <div>
+                        <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-indigo-600 group-hover:text-white transition">
+                            <i class="fa-solid fa-unlock-keyhole"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-3">Aperturas de Emergencia</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                            Apertura técnica especializada por pérdida de claves, fallas electrónicas o baterías agotadas. Evitamos daños estructurales innecesarios en tu caja fuerte.
+                        </p>
+                    </div>
+                    <a href="https://wa.me/34900987654?text=Hola,%20necesito%20una%20apertura%20de%20emergencia." target="_blank" class="text-indigo-600 font-bold text-sm flex items-center gap-2 hover:text-indigo-700">
+                        Solicitar Apertura <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+                <!-- Servicio 2 -->
+                <div class="bg-slate-50 border border-slate-200/80 p-8 rounded-3xl hover:shadow-xl hover:border-indigo-200 transition group flex flex-col justify-between">
+                    <div>
+                        <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-indigo-600 group-hover:text-white transition">
+                            <i class="fa-solid fa-screwdriver-wrench"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-3">Mantenimiento Preventivo</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                            Calibración de pestillos, lubricación de engranajes de alta precisión y revisión de circuitos electrónicos para prevenir fallos mecánicos imprevistos.
+                        </p>
+                    </div>
+                    <a href="https://wa.me/34900987654?text=Hola,%20me%20interesa%20mantenimiento%20preventivo." target="_blank" class="text-indigo-600 font-bold text-sm flex items-center gap-2 hover:text-indigo-700">
+                        Agendar Revisión <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+                <!-- Servicio 3 -->
+                <div class="bg-slate-50 border border-slate-200/80 p-8 rounded-3xl hover:shadow-xl hover:border-indigo-200 transition group flex flex-col justify-between">
+                    <div>
+                        <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:bg-indigo-600 group-hover:text-white transition">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-3">Reparación y Conversión</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                            Actualización de sistemas mecánicos tradicionales a cerraduras biométricas o digitales avanzadas. Cambio de combinación por seguridad corporativa.
+                        </p>
+                    </div>
+                    <a href="https://wa.me/34900987654?text=Hola,%20quiero%20actualizar%20o%20reparar%20mi%20cerradura." target="_blank" class="text-indigo-600 font-bold text-sm flex items-center gap-2 hover:text-indigo-700">
+                        Cotizar Reparación <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Catálogo de Cajas Fuertes (Sin Carrito) -->
+    <section id="catalogo" class="py-20 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                <div>
+                    <span class="text-indigo-600 text-xs font-bold uppercase tracking-widest block mb-2">Alta Seguridad</span>
+                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900">Catálogo de Cajas Fuertes</h2>
+                </div>
+                <p class="text-slate-600 text-sm mt-3 md:mt-0 max-w-md">
+                    Selecciona el equipo ideal para tu hogar u oficina. Cotiza directamente por WhatsApp con un solo clic.
+                </p>
+            </div>
+
+            <!-- Grid de Productos -->
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Producto 1 -->
+                <div class="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                    <div>
+                        <div class="relative h-48 bg-indigo-50 rounded-2xl mb-4 flex items-center justify-center text-indigo-600 overflow-hidden">
+                            <i class="fa-solid fa-vault text-6xl"></i>
+                            <span class="absolute top-3 right-3 bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Residencial</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">NovaSecure Home Bio</h3>
+                        <p class="text-xs text-slate-500 mb-4">Cerradura biométrica + código digital de alta velocidad.</p>
+                        <ul class="space-y-2 text-xs text-slate-600 mb-6">
+                            <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Capacidad: 30 Litros</li>
+                            <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Protección ignífuga 60 min</li>
+                            <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Anclaje de alta resistencia</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <a href="https://wa.me/34900987654?text=Hola,%20me%20interesa%20cotizar%20el%20modelo:%20NovaSecure%20Home%20Bio" target="_blank" class="w-full bg-whatsapp hover:bg-whatsapp-hover text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-whatsapp/20">
+                            <i class="fa-brands fa-whatsapp text-lg"></i> Cotizar por WhatsApp
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Producto 2 -->
+                <div class="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                    <div>
+                        <div class="relative h-48 bg-indigo-50 rounded-2xl mb-4 flex items-center justify-center text-indigo-600 overflow-hidden">
+                            <i class="fa-solid fa-vault text-6xl"></i>
+                            <span class="absolute top-3 right-3 bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Oficina / Negocio</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">Enterprise Pro 500</h3>
+                        <p class="text-xs text-slate-500 mb-4">Doble combinación mecánica y pestillería activa anti-taladro.</p>
+                        <ul class="space-y-2 text-xs text-slate-600 mb-6">
+                            <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Capacidad: 95 Litros</li>
+                            <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Placa de acero templado</li>
+                            <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Certificación Grado III</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <a href="https://wa.me/34900987654?text=Hola,%20me%20interesa%20cotizar%20el%20modelo:%20Enterprise%20Pro%20500" target="_blank" class="w-full bg-whatsapp hover:bg-whatsapp-hover text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-whatsapp/20">
+                            <i class="fa-brands fa-whatsapp text-lg"></i> Cotizar por WhatsApp
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Producto 3 -->
+                <div class="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                    <div>
+                        <div class="relative h-48 bg-indigo-50 rounded-2xl mb-4 flex items-center justify-center text-indigo-600 overflow-hidden">
+                            <i class="fa-solid fa-vault text-6xl"></i>
+                            <span class="absolute top-3 right-3 bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Ignífuga Avanzada</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">Titan Fire Shield 120</h3>
+                        <p class="text-xs text-slate-500 mb-4">Protección térmica extrema para documentos críticos y efectivo.</p>
+                        <ul class="space-y-2 text-xs text-slate-600 mb-6">
+                            <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Capacidad: 60 Litros</li>
+                            <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Resistencia a fuego 120 min</li>
+                            <li><i class="fa-solid fa-check text-indigo-600 mr-2"></i> Cierre hermético reforzado</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <a href="https://wa.me/34900987654?text=Hola,%20me%20interesa%20cotizar%20el%20modelo:%20Titan%20Fire%20Shield%20120" target="_blank" class="w-full bg-whatsapp hover:bg-whatsapp-hover text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-whatsapp/20">
+                            <i class="fa-brands fa-whatsapp text-lg"></i> Cotizar por WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Confianza y Contacto -->
+    <section id="nosotros" class="py-20 bg-white border-t border-slate-200/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <span class="text-indigo-600 text-xs font-bold uppercase tracking-widest block mb-2">Por qué Elegirnos</span>
+                <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-6">Confianza, Discreción y Soluciones Reales</h2>
+                <p class="text-slate-600 mb-8 leading-relaxed">
+                    En <strong class="text-slate-900">SeguriNova</strong> combinamos la experiencia técnica de nuestra trayectoria con tecnología moderna para ofrecerte un servicio impecable. Cada apertura y cada instalación cuenta con garantía por escrito.
+                </p>
+                <div class="space-y-4 mb-8">
+                    <div class="flex items-start gap-3">
+                        <div class="w-7 h-7 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5"><i class="fa-solid fa-check"></i></div>
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-sm">Protocolo de Confidencialidad Absoluta</h4>
+                            <p class="text-xs text-slate-500">Tus bienes y datos están protegidos bajo estrictas normas de privacidad.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-7 h-7 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs shrink-0 mt-0.5"><i class="fa-solid fa-check"></i></div>
+                        <div>
+                            <h4 class="font-bold text-slate-900 text-sm">Repuestos Originales y Homologados</h4>
+                            <p class="text-xs text-slate-500">Trabajamos con componentes certificados de fábrica para mayor durabilidad.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de Contacto -->
+            <div class="bg-slate-50 border border-slate-200/80 p-8 rounded-3xl shadow-sm">
+                <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-envelope text-indigo-600"></i> Envíanos un Mensaje
+                </h3>
+                <form class="space-y-4" onsubmit="event.preventDefault(); showCustomMessage('¡Mensaje enviado con éxito! Nos pondremos en contacto contigo de inmediato.');">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nombre Completo</label>
+                        <input type="text" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-indigo-600" placeholder="Ej. María García">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Teléfono o WhatsApp</label>
+                        <input type="tel" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-indigo-600" placeholder="Ej. 600 123 456">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">¿Qué servicio o modelo necesitas?</label>
+                        <textarea rows="3" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-indigo-600" placeholder="Describe brevemente tu requerimiento..."></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-indigo-600/20">
+                        Enviar Solicitud
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Ubicación y Mapa -->
+    <section id="ubicacion" class="py-20 bg-slate-50 border-t border-slate-200/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-indigo-600 text-xs font-bold uppercase tracking-widest block mb-2">Visítanos</span>
+                <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-4">Ubicación y Cobertura</h2>
+                <p class="text-slate-600 text-sm sm:text-base">Acude a nuestra tienda física o solicita asistencia móvil en toda la región.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8 items-stretch">
+                <!-- Info de ubicación -->
+                <div class="bg-white border border-slate-200/80 p-8 rounded-3xl shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-2xl font-bold text-slate-900 mb-6">Datos del Taller y Tienda</h3>
+                        <ul class="space-y-6 text-slate-600 text-sm">
+                            <li class="flex items-start gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                </div>
+                                <div>
+                                    <strong class="block text-slate-900">Dirección Principal:</strong>
+                                    <span>Paseo de la Castellana #120, Local 4, 28046 Madrid.</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shrink-0">
+                                    <i class="fa-solid fa-clock"></i>
+                                </div>
+                                <div>
+                                    <strong class="block text-slate-900">Horarios:</strong>
+                                    <span>Lunes a Viernes: 9:00 AM – 7:00 PM<br>Sábados: 9:00 AM – 2:00 PM<br><strong class="text-indigo-600">Servicio de Emergencias 24/7</strong></span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-8 pt-6 border-t border-slate-100">
+                        <a href="https://maps.google.com" target="_blank" class="w-full bg-slate-900 hover:bg-indigo-600 text-white font-semibold py-3 rounded-xl text-sm text-center block transition">
+                            <i class="fa-solid fa-map-location-dot mr-2"></i> Abrir en Google Maps
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Mapa incrustado -->
+                <div class="rounded-3xl overflow-hidden border border-slate-200/80 h-[380px] lg:h-auto bg-slate-200">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3037.158434728562!2d-3.6921319234857516!3d40.45037005497439!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd4228fe0b9685e5%3A0x8083818e3a241777!2sPaseo%20de%20la%20Castellana%2C%20Madrid%2C%20Spain!5e0!3m2!1ses!2sus!4v1700000000000!5m2!1ses!2sus" 
+                        width="100%" 
+                        height="100%" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 text-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-sm">
+                    <i class="fa-solid fa-vault"></i>
+                </div>
+                <span class="font-bold text-white tracking-tight">SEGURINOVA Cajas Fuertes & Servicios</span>
+            </div>
+            <p class="text-xs text-center">© 2026 SeguriNova. Todos los derechos reservados. Venta, mantenimiento y aperturas profesionales.</p>
+            <div class="flex gap-4 text-slate-300">
+                <a href="#" class="hover:text-indigo-400 transition"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#" class="hover:text-indigo-400 transition"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://wa.me/34900987654" target="_blank" class="hover:text-whatsapp transition"><i class="fa-brands fa-whatsapp text-lg"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Botón Flotante de WhatsApp -->
+    <a href="https://wa.me/34900987654?text=Hola,%20necesito%20asistencia%20urgente%20o%20información." target="_blank" class="fixed bottom-6 right-6 z-50 bg-whatsapp hover:bg-whatsapp-hover text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-2xl transition transform hover:scale-110 group" aria-label="WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+        <span class="absolute right-20 bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap border border-slate-800">
+            ¡Escríbenos por WhatsApp!
+        </span>
+    </a>
+
+    <!-- Custom Message Box (No alert) -->
+    <div id="custom-msg" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center space-y-4">
+            <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl mx-auto">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 id="msg-title" class="text-xl font-bold text-slate-900">¡Éxito!</h3>
+            <p id="msg-text" class="text-sm text-slate-600"></p>
+            <button onclick="closeCustomMessage()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm transition">
+                Aceptar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function showCustomMessage(text) {
+            document.getElementById('msg-text').innerText = text;
+            document.getElementById('custom-msg').classList.remove('hidden');
+        }
+
+        function closeCustomMessage() {
+            document.getElementById('custom-msg').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

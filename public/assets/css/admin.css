@@ -1,0 +1,46 @@
+/* Ajustes del dashboard sobre Tabler, con el índigo de la landing */
+:root, [data-bs-theme] {
+    --tblr-primary: #6366f1;
+    --tblr-primary-rgb: 99, 102, 241;
+    --tblr-primary-fg: #fff;
+}
+[x-cloak] { display: none !important; }
+
+.brand-logo {
+    display: inline-block; width: 5rem; height: 5rem; border-radius: 1.25rem;
+    object-fit: cover; box-shadow: 0 10px 24px rgba(2, 11, 29, .35);
+}
+.brand-logo-sm { width: 2rem; height: 2rem; border-radius: .6rem; box-shadow: none; }
+
+/* Gráfica de barras ligera (sin librerías) */
+.mini-chart { display: flex; align-items: flex-end; gap: 6px; height: 180px; }
+.mini-chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.mini-chart-bar { width: 100%; max-width: 28px; border-radius: 6px 6px 2px 2px; background: var(--tblr-primary); opacity: .85; transition: height .3s; }
+.mini-chart-col:hover .mini-chart-bar { opacity: 1; }
+.mini-chart-val { font-size: .7rem; color: var(--tblr-secondary); min-height: 1rem; }
+.mini-chart-label { font-size: .7rem; color: var(--tblr-secondary); margin-top: 4px; }
+
+.toast-stack { position: fixed; right: 1rem; bottom: 1rem; z-index: 2000; max-width: 360px; }
+.modal-backdrop { z-index: 1040; }
+.modal.d-block { z-index: 1050; overflow-y: auto; }
+.table td.text-truncate { max-width: 320px; }
+
+/* Selector de imagen (subir / arrastrar / URL) */
+.img-drop {
+    position: relative; flex: 0 0 auto; width: 132px; height: 132px; border-radius: 12px; cursor: pointer;
+    border: 2px dashed var(--tblr-border-color); background: var(--tblr-bg-surface-secondary);
+    display: flex; align-items: center; justify-content: center; overflow: hidden; transition: border-color .15s;
+}
+.img-drop:hover, .img-drop.is-dragging { border-color: var(--tblr-primary); }
+.img-drop img { width: 100%; height: 100%; object-fit: cover; }
+.img-drop-busy { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.6); }
+
+/* Botones de acción en tablas y mensajes: más grandes y fáciles de tocar */
+.btn-action { min-height: 2.5rem; min-width: 2.5rem; padding: .45rem .9rem; gap: .4rem; font-weight: 500; }
+.btn-action .ti { font-size: 1.25rem; }
+.btn-whatsapp, .btn-whatsapp:visited { background-color: #25d366; border-color: #25d366; color: #fff; }
+.btn-whatsapp:hover, .btn-whatsapp:focus, .btn-whatsapp:active { background-color: #1ebe5b; border-color: #1ebe5b; color: #fff; }
+.btn-action.btn-outline-primary { color: var(--tblr-primary); }
+.btn-action.btn-outline-danger { color: var(--tblr-danger); }
+.btn-action.btn-outline-primary:hover { background-color: var(--tblr-primary); border-color: var(--tblr-primary); color: #fff; }
+.btn-action.btn-outline-danger:hover { background-color: var(--tblr-danger); border-color: var(--tblr-danger); color: #fff; }
