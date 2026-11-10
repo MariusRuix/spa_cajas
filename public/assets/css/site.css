@@ -337,6 +337,21 @@ html.no-scroll { overflow: hidden; }
 .lightbox__thumb:hover { opacity: .85; }
 .lightbox__thumb.is-active { opacity: 1; border-color: var(--silver-100); }
 
+/* ---- Página 404 ---------------------------------------------------------- */
+.page-404 { background: var(--night); }
+.page-404 .masthead { position: static; }
+.lost { min-height: calc(100vh - 4.5rem); min-height: calc(100dvh - 4.5rem); display: flex; align-items: center; }
+.lost .sheet__inner { width: 100%; padding-block: clamp(2.5rem, 7vh, 5rem); }
+.emblem--sm { width: clamp(90px, 11vw, 130px); margin-bottom: 1rem; }
+.emblem--sm::after { display: none; }
+.lost__code {
+    font-family: var(--font-display); font-weight: 700; line-height: .9;
+    font-size: clamp(5.5rem, 16vw, 10rem); letter-spacing: .02em;
+    color: transparent; -webkit-text-stroke: 1.5px var(--silver-300);
+}
+.lost__title { margin-top: .75rem; font-size: clamp(2rem, 4.6vw, 3.4rem); }
+.lost .sheet__actions { flex-wrap: wrap; }
+
 /* ---- Celular: barra de llamada ------------------------------------------ */
 .callbar { display: none; }
 

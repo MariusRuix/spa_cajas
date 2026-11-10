@@ -66,10 +66,22 @@ Flight::map('error', function (Throwable $e) use ($config) {
 });
 
 Flight::map('notFound', function () {
-    if (str_starts_with(Flight::request()->url, '/api/')) {
+    $path = parse_url(Flight::request()->url, PHP_URL_PATH) ?: '/';
+    if (str_starts_with($path, '/api/')) {
         Flight::jsonHalt(['error' => 'No encontrado'], 404);
     }
-    Flight::halt(404, 'Página no encontrada');
+    // Archivos que no existen (imágenes, css, js…): respuesta corta, sin página completa
+    if (preg_match('/\.[a-z0-9]{2,5}$/i', $path) && !preg_match('/\.(html?|php)$/i', $path)) {
+        Flight::halt(404, 'No encontrado');
+    }
+    try {
+        $s = settings();
+    } catch (Throwable $e) {
+        $s = [];
+    }
+    Flight::response()->status(404);
+    Flight::render('404', ['s' => $s]);
+    Flight::stop();
 });
 
 require BASE_PATH . '/app/routes.php';

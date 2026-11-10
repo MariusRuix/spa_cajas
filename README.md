@@ -76,6 +76,10 @@ Requisitos: PHP 8.0+ con `pdo_sqlite` y `gd` (activos por defecto en Hostinger).
 - Todo lo que se imprime pasa por `e()` (anti-XSS); las URLs solo aceptan `http(s)://`.
 - `app/`, `lib/` y `storage/` bloqueados por `.htaccess`; headers de seguridad.
 
+## Página 404
+
+Las direcciones que no existen muestran `app/views/404.php` (con la marca, botones a inicio, catálogo y WhatsApp) y responden con código 404 y `noindex`. Los archivos inexistentes (`.css`, `.js`, imágenes…) devuelven un 404 corto y las rutas `/api/` un JSON.
+
 ## Usuarios del panel
 
 En **Panel → Usuarios** (solo administradores) se crean, editan y eliminan cuentas.
