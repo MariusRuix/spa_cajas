@@ -7,7 +7,8 @@ Stack: **Flight PHP 3.19** (incluido en `lib/`, sin Composer) · **Alpine.js 3.1
 ```
 .htaccess            → redirige todo a public/
 app/                 → lógica (bloqueada al navegador)
-  config.php         → debug, setup_key, límites
+  config.php         → valores por defecto (se reemplaza en cada despliegue)
+  config.local.php   → claves y debug de ESTE servidor (no se sube; plantilla: config.local.example.php)
   Database.php       → tablas + datos iniciales de la maqueta
   helpers.php        → seguridad, validación y recursos CRUD
   routes.php         → rutas web y API
@@ -21,7 +22,7 @@ storage/             → database.sqlite y log de errores (se crean solos)
 ## Uso local (Laragon)
 
 1. Abre `http://royal-vault.test/` (la BD se crea sola en `storage/`).
-2. Entra a `http://royal-vault.test/admin`, escribe la `setup_key` de `app/config.php` y crea tu usuario.
+2. Entra a `http://royal-vault.test/admin`, escribe la `setup_key` de `app/config.local.php` y crea tu usuario.
 
 ## Despliegue en Hostinger (recomendado: código fuera de `public_html`)
 
@@ -37,18 +38,31 @@ El código, la base de datos y la configuración quedan **fuera** de la carpeta 
 2. Crea la carpeta **`royal-vault`** (al mismo nivel que `public_html`) y sube ahí `app/`, `lib/` y `storage/`.
 3. Borra lo que Hostinger pone por defecto en `public_html` (`default.php`, etc.) y sube **el contenido** de `public/` (no la carpeta). Incluye los archivos ocultos `.htaccess` y `uploads/.htaccess`.
 4. `index.php` encuentra solo la carpeta `royal-vault` vecina. Si usas otro nombre o ubicación, escribe la ruta en `$APP_ROOT` al inicio de `public_html/index.php`.
-5. En `royal-vault/app/config.php`: `debug => false` y cambia `setup_key`.
+5. En `royal-vault/app/` copia `config.local.example.php` como **`config.local.php`** y pon tus claves (`setup_key` y `app_key` nuevas, `debug => false`).
 6. Permisos de escritura (755) en `royal-vault/storage/` y `public_html/uploads/`.
 7. Activa SSL y descomenta en `public_html/.htaccess` la redirección a HTTPS y el header HSTS.
 8. Entra a `https://tudominio.com/admin` y crea tu usuario con la `setup_key`.
 
 **Respaldos:** `royal-vault/storage/` (base de datos) y `public_html/uploads/` (imágenes).
 
-**Actualizar el sitio:** cambios en `app/` o `lib/` van a `royal-vault/`; cambios en `public/` van a `public_html/`. Nunca sobrescribas `storage/database.sqlite` ni `uploads/`.
+## Actualizar el sitio (despliegues)
+
+1. En Laragon, doble clic en **`deploy.bat`** (o `php tools/build-deploy.php`). Genera:
+   - `deploy/public_html.zip` → súbelo a `public_html/` y **extrae reemplazando**.
+   - `deploy/royal-vault.zip` → súbelo a `royal-vault/` y **extrae reemplazando**.
+2. Borra los ZIP del servidor y recarga con Ctrl+F5. Los cambios de base de datos se aplican solos al abrir el sitio.
+
+| Se reemplaza en cada despliegue (seguro) | Nunca se reemplaza (vive solo en el servidor) |
+|---|---|
+| `app/` (incluido `config.php`), `lib/`, `public/` | `app/config.local.php` (claves, debug) |
+| `storage/.htaccess`, `uploads/.htaccess` | `storage/database.sqlite*` (mensajes, productos, ajustes) |
+| | `uploads/products/…` (imágenes subidas) |
+
+Los ZIP ya excluyen lo de la columna derecha, así que extraer reemplazando no borra nada tuyo. Si algún día cambias un valor por defecto (límites, sesión), hazlo en `config.php`; si es propio de un servidor, en su `config.local.php`.
 
 ### Alternativa: todo dentro de `public_html`
 
-También funciona subir el proyecto completo a `public_html/` (el `.htaccess` de la raíz redirige a `public/` y bloquea `app/`, `lib/` y `storage/`). Es más simple pero depende de que esos `.htaccess` funcionen: comprueba que `https://tudominio.com/storage/database.sqlite` y `/app/config.php` respondan **403**.
+También funciona subir el proyecto completo a `public_html/` (el `.htaccess` de la raíz redirige a `public/` y bloquea `app/`, `lib/` y `storage/`). Es más simple pero depende de que esos `.htaccess` funcionen: comprueba que `https://tudominio.com/storage/database.sqlite` y `/app/config.local.php` respondan **403**.
 
 Requisitos: PHP 8.0+ con `pdo_sqlite` y `gd` (activos por defecto en Hostinger).
 
@@ -61,6 +75,20 @@ Requisitos: PHP 8.0+ con `pdo_sqlite` y `gd` (activos por defecto en Hostinger).
 - PDO con consultas preparadas; nombres de tablas y columnas solo desde una lista blanca.
 - Todo lo que se imprime pasa por `e()` (anti-XSS); las URLs solo aceptan `http(s)://`.
 - `app/`, `lib/` y `storage/` bloqueados por `.htaccess`; headers de seguridad.
+
+## Usuarios del panel
+
+En **Panel → Usuarios** (solo administradores) se crean, editan y eliminan cuentas.
+
+| Rol | Puede |
+|---|---|
+| **Administrador** | Todo: mensajes, catálogo, servicios, Configuración (SEO, analítica, correo) y Usuarios. |
+| **Editor** | Mensajes, catálogo y servicios, y cambiar su propia contraseña. |
+
+- El primer usuario (creado con la `setup_key`) es administrador.
+- Nadie puede eliminarse a sí mismo, quitarse el rol de administrador ni dejar el panel sin administradores.
+- Al eliminar un usuario, o cambiar su contraseña o su rol, sus sesiones abiertas se cierran solas.
+- Los permisos se validan en el servidor; ocultar el menú es solo comodidad.
 
 ## SEO y analítica
 
@@ -83,18 +111,21 @@ En **Panel → Configuración → Correo** activa el envío, escribe a quién av
 
 **Correo de Hostinger:** botón *Correo de Hostinger* (smtp.hostinger.com · 465 · SSL) con el buzón creado en hPanel.
 
-- La contraseña se guarda **cifrada** (AES-256-GCM con `app_key` de `app/config.php`) y nunca se envía al navegador.
+- La contraseña se guarda **cifrada** (AES-256-GCM con `app_key` de `app/config.local.php`) y nunca se envía al navegador.
 - Si el envío falla, el mensaje igual se guarda en el panel y el error aparece en la pestaña Correo.
 - Usa PHPMailer 6.10 (incluido en `lib/phpmailer`, sin Composer).
 
-## Imágenes de productos
+## Fotos de productos (galería)
 
-En el formulario de cada producto puedes **subir una foto** (clic o arrastrar) **o pegar una URL** externa.
+Cada producto admite **hasta 20 fotos**. En el formulario del producto (Panel → Catálogo → Editar):
 
-- Formatos JPG, PNG, WEBP o GIF, máx. 5 MB. Se valida el contenido real del archivo y, con GD, se re-genera como WEBP de máx. 1600 px (quita metadatos y reduce peso).
-- Se guardan en `uploads/products/AAAA/MM/` dentro de la carpeta pública (`public/` en Laragon, `public_html/` en Hostinger). Esa carpeta solo sirve imágenes (`.htaccess` bloquea cualquier script).
-- Al cambiar o quitar la imagen, o al eliminar el producto, el archivo anterior se borra.
-- En Hostinger, `public_html/uploads/` debe tener permisos de escritura (755). Inclúyela en tus respaldos junto con `storage/`.
+- **Agregar fotos**: selecciona o arrastra varias a la vez (JPG, PNG, WEBP o GIF, máx. 5 MB cada una). También se puede agregar una foto por URL.
+- **Ordenar**: arrastra las miniaturas o usa las flechas. La **primera es la portada** (botón ★ para hacer portada cualquiera).
+- Pulsa **Guardar** para aplicar los cambios; las fotos que quites se borran del servidor.
+
+En el sitio, la tarjeta muestra la portada con el número de fotos; al hacer clic se abre un carrusel a pantalla completa (flechas, teclado, deslizar con el dedo y miniaturas).
+
+Detalles técnicos: tabla `product_images`; `products.image_url` guarda la portada. Las fotos se validan por su contenido, se re-generan como WEBP de máx. 1600 px sin metadatos y se guardan en `uploads/products/AAAA/MM/` (carpeta que solo sirve imágenes). Al eliminar un producto se borran sus fotos. En Hostinger, `public_html/uploads/` necesita permisos de escritura (755) y conviene respaldarla junto con `storage/`.
 
 ## Agregar un módulo CRUD nuevo
 
