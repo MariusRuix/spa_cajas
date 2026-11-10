@@ -7,7 +7,7 @@
  *   3. Agrégala en RESOURCES (abajo) y en MENU
  */
 
-const ICON_HINT = 'Clase de <a href="https://fontawesome.com/search?o=r&m=free" target="_blank" rel="noopener">Font Awesome</a>, ej. <code>fa-solid fa-vault</code>';
+const ICON_HINT = 'Icono de línea de <a href="https://tabler.io/icons" target="_blank" rel="noopener">Tabler Icons</a>, ej. <code>ti ti-key</code>. Vacío = caja fuerte.';
 
 const RESOURCES = {
     products: {
@@ -26,13 +26,13 @@ const RESOURCES = {
             { key: 'badge', label: 'Etiqueta', type: 'text', placeholder: 'Residencial' },
             { key: 'description', label: 'Descripción corta', type: 'textarea', wide: true, rows: 2 },
             { key: 'features', label: 'Características', type: 'textarea', wide: true, rows: 4, hint: 'Una por línea.' },
-            { key: 'badge_style', label: 'Color de etiqueta', type: 'select', options: [{ value: 'primary', label: 'Índigo' }, { value: 'dark', label: 'Oscuro' }] },
+            { key: 'badge_style', label: 'Color de etiqueta', type: 'select', options: [{ value: 'primary', label: 'Plata (relleno)' }, { value: 'dark', label: 'Contorno' }] },
             { key: 'icon', label: 'Icono', type: 'icon', hint: ICON_HINT },
-            { key: 'image_url', label: 'Imagen (opcional)', type: 'image', wide: true, folder: 'products', hint: 'Sube una foto (JPG, PNG, WEBP o GIF, máx. 5 MB; se optimiza sola) o pega una URL. Si no hay imagen se muestra el icono.' },
+            { key: 'images', label: 'Fotos', type: 'gallery', wide: true, folder: 'products', hint: 'Puedes subir varias a la vez (JPG, PNG, WEBP o GIF, máx. 5 MB cada una; se optimizan solas). Arrastra para ordenar: la primera es la portada. Sin fotos se muestra el icono.' },
             { key: 'sort', label: 'Orden', type: 'number' },
             { key: 'active', label: 'Visible en el sitio', type: 'switch' },
         ],
-        defaults: { name: '', badge: '', description: '', features: '', badge_style: 'primary', icon: 'fa-solid fa-vault', image_url: '', sort: 0, active: true },
+        defaults: { name: '', badge: '', description: '', features: '', badge_style: 'primary', icon: '', images: [], sort: 0, active: true },
     },
     services: {
         title: 'Servicios técnicos',
@@ -53,7 +53,7 @@ const RESOURCES = {
             { key: 'sort', label: 'Orden', type: 'number' },
             { key: 'active', label: 'Visible en el sitio', type: 'switch' },
         ],
-        defaults: { title: '', icon: 'fa-solid fa-wrench', description: '', cta_label: 'Más información', wa_message: '', sort: 0, active: true },
+        defaults: { title: '', icon: 'ti ti-tool', description: '', cta_label: 'Más información', wa_message: '', sort: 0, active: true },
     },
 };
 
@@ -62,14 +62,15 @@ const MENU = [
     { view: 'messages', label: 'Mensajes', icon: 'ti-inbox', title: 'Mensajes de contacto' },
     { view: 'products', label: 'Catálogo', icon: 'ti-box', title: RESOURCES.products.title },
     { view: 'services', label: 'Servicios', icon: 'ti-tool', title: RESOURCES.services.title },
-    { view: 'settings', label: 'Configuración', icon: 'ti-settings', title: 'Configuración del sitio' },
+    { view: 'settings', label: 'Configuración', icon: 'ti-settings', title: 'Configuración del sitio', admin: true },
+    { view: 'users', label: 'Usuarios', icon: 'ti-users', title: 'Usuarios del panel', admin: true },
     { view: 'account', label: 'Mi cuenta', icon: 'ti-user', title: 'Mi cuenta' },
 ];
 
 const SETTING_GROUPS = [
     { title: 'Marca', icon: 'ti-crown', keys: ['brand_name', 'brand_highlight', 'brand_tagline', 'site_title'] },
     { title: 'Contacto', icon: 'ti-phone', keys: ['phone_display', 'whatsapp', 'topbar_text', 'address', 'hours', 'maps_url', 'maps_embed'] },
-    { title: 'Portada', icon: 'ti-layout-navbar', keys: ['hero_badge', 'hero_title', 'hero_highlight', 'hero_text', 'stat_1_value', 'stat_1_label', 'stat_2_value', 'stat_2_label', 'stat_3_value', 'stat_3_label'] },
+    { title: 'Portada', icon: 'ti-layout-navbar', keys: ['hero_badge', 'hero_title', 'hero_highlight', 'hero_text'] },
     { title: 'Nosotros y pie', icon: 'ti-info-circle', keys: ['about_text', 'footer_text', 'facebook_url', 'instagram_url'] },
     {
         title: 'SEO', icon: 'ti-brand-google', preview: true,
@@ -133,7 +134,8 @@ document.addEventListener('alpine:init', () => {
         auth: { email: '', password: '', name: '', setup_key: '', error: '' },
 
         view: 'dashboard',
-        menu: MENU,
+        get menu() { return MENU.filter(m => !m.admin || this.isAdmin); },
+        get isAdmin() { return this.user?.role === 'admin'; },
         menuOpen: false,
         theme: 'light',
         toasts: [],
@@ -175,7 +177,7 @@ document.addEventListener('alpine:init', () => {
 
         route() {
             const v = (location.hash.replace(/^#\/?/, '') || 'dashboard');
-            this.view = MENU.some(m => m.view === v) ? v : 'dashboard';
+            this.view = this.menu.some(m => m.view === v) ? v : 'dashboard';
             this.search = '';
             this.load();
         },
@@ -189,6 +191,7 @@ document.addEventListener('alpine:init', () => {
                 if (this.view === 'dashboard') return await this.loadStats();
                 if (this.view === 'messages') return await this.loadMessages();
                 if (this.view === 'settings') return await this.loadSettings();
+                if (this.view === 'users') return await this.loadUsers();
                 if (this.resource) {
                     this.rows = [];
                     this.rows = await api('GET', `/api/admin/r/${this.view}`);
@@ -243,7 +246,7 @@ document.addEventListener('alpine:init', () => {
             return [
                 { label: 'Mensajes sin leer', value: s.unread ?? 0, icon: 'ti-mail', color: 'bg-red-lt', href: '#/messages' },
                 { label: 'Mensajes esta semana', value: s.messages_week ?? 0, icon: 'ti-message-circle', color: 'bg-blue-lt', href: '#/messages' },
-                { label: `Productos activos (de ${s.products_total ?? 0})`, value: s.products ?? 0, icon: 'ti-box', color: 'bg-indigo-lt', href: '#/products' },
+                { label: `Productos activos (de ${s.products_total ?? 0})`, value: s.products ?? 0, icon: 'ti-box', color: 'bg-primary-lt', href: '#/products' },
                 { label: `Servicios activos (de ${s.services_total ?? 0})`, value: s.services ?? 0, icon: 'ti-tool', color: 'bg-green-lt', href: '#/services' },
             ];
         },
@@ -287,33 +290,81 @@ document.addEventListener('alpine:init', () => {
         dragging: false,
         uploading: false,
 
-        async uploadImage(file, key) {
-            if (!file) return;
-            if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) return this.toast('Formato no permitido. Usa JPG, PNG, WEBP o GIF.', 'error');
-            if (file.size > 5 * 1024 * 1024) return this.toast('La imagen pesa más de 5 MB.', 'error');
-            const field = this.resource.fields.find(f => f.key === key);
+        /** Sube un archivo y devuelve su ruta (/uploads/...). Lanza error con mensaje claro. */
+        async uploadFile(file, folder) {
+            if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) throw new Error(`${file.name}: formato no permitido (usa JPG, PNG, WEBP o GIF).`);
+            if (file.size > 5 * 1024 * 1024) throw new Error(`${file.name}: pesa más de 5 MB.`);
             const body = new FormData();
             body.append('file', file);
+            const res = await fetch(`/api/admin/upload?folder=${folder || 'misc'}`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name=csrf-token]').content },
+                body,
+            });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(`${file.name}: ${json.error || 'Error ' + res.status}`);
+            return json.url;
+        },
+
+        async uploadImage(file, key) {
+            if (!file) return;
+            const field = this.resource.fields.find(f => f.key === key);
             this.uploading = true;
             try {
-                const res = await fetch(`/api/admin/upload?folder=${field?.folder || 'misc'}`, {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: { 'Accept': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name=csrf-token]').content },
-                    body,
-                });
-                const json = await res.json().catch(() => ({}));
-                if (!res.ok) throw new Error(json.error || `Error ${res.status}`);
-                this.form.data[key] = json.url;
+                this.form.data[key] = await this.uploadFile(file, field?.folder);
                 this.toast('Imagen subida. Recuerda guardar.');
-            } catch (e) {
-                this.toast(e.message, 'error');
+            } catch (e) { this.toast(e.message, 'error'); }
+            this.uploading = false;
+        },
+
+        // ---------- Galería (varias fotos) ----------
+        upload: { done: 0, total: 0 },
+        dragFrom: null,
+
+        async uploadGallery(fileList, key) {
+            const files = Array.from(fileList || []);
+            if (!files.length) return;
+            const field = this.resource.fields.find(f => f.key === key);
+            const list = this.form.data[key];
+            const room = 20 - list.length;
+            if (room <= 0) return this.toast('Máximo 20 fotos por producto.', 'error');
+            if (files.length > room) this.toast(`Solo caben ${room} fotos más; se subirán las primeras ${room}.`, 'error');
+            const queue = files.slice(0, room);
+            this.uploading = true;
+            this.upload = { done: 0, total: queue.length };
+            const errors = [];
+            for (const file of queue) {            // una por una: no satura el hosting compartido
+                try { list.push(await this.uploadFile(file, field?.folder)); }
+                catch (e) { errors.push(e.message); }
+                this.upload.done++;
             }
             this.uploading = false;
+            const ok = queue.length - errors.length;
+            if (ok) this.toast(`${ok} foto${ok > 1 ? 's' : ''} subida${ok > 1 ? 's' : ''}. Recuerda guardar.`);
+            errors.slice(0, 3).forEach(m => this.toast(m, 'error'));
+        },
+
+        addImageUrl(key, input) {
+            const url = (input.value || '').trim();
+            if (!/^https?:\/\//i.test(url)) return this.toast('La URL debe empezar con https://', 'error');
+            if (this.form.data[key].length >= 20) return this.toast('Máximo 20 fotos por producto.', 'error');
+            this.form.data[key].push(url);
+            input.value = '';
+        },
+
+        removeImage(key, i) { this.form.data[key].splice(i, 1); },
+
+        moveImage(key, from, to) {
+            const list = this.form.data[key];
+            if (from === null || from === to || to < 0 || to >= list.length) return;
+            list.splice(to, 0, list.splice(from, 1)[0]);
         },
 
         openForm(row = null) {
             const data = { ...this.resource.defaults, ...(row || {}) };
+            // Copia de las listas para no modificar la tabla si se cancela
+            for (const f of this.resource.fields) if (f.type === 'gallery') data[f.key] = [...(data[f.key] || [])];
             if (!row) data.sort = (Math.max(0, ...this.rows.map(r => +r.sort)) + 1);
             data.active = !!+data.active;
             this.form = { open: true, data, error: '' };
@@ -348,13 +399,48 @@ document.addEventListener('alpine:init', () => {
             const { resource, row } = this.confirm;
             this.busy = true;
             try {
-                const url = resource === 'messages' ? `/api/admin/messages/${row.id}` : `/api/admin/r/${resource}/${row.id}`;
+                const url = resource === 'messages' ? `/api/admin/messages/${row.id}`
+                    : resource === 'users' ? `/api/admin/users/${row.id}`
+                    : `/api/admin/r/${resource}/${row.id}`;
                 await api('DELETE', url);
                 this.confirm.open = false;
                 this.toast('Eliminado');
                 await this.load();
                 if (resource === 'messages') this.loadStats();
             } catch (e) { this.toast(e.message, 'error'); }
+            this.busy = false;
+        },
+
+        // ---------- Usuarios ----------
+        users: [],
+        roles: {},
+        userForm: { open: false, data: {}, error: '' },
+
+        async loadUsers() {
+            const r = await api('GET', '/api/admin/users');
+            this.users = r.users;
+            this.roles = r.roles;
+        },
+
+        openUser(u = null) {
+            this.userForm = {
+                open: true, error: '',
+                data: u ? { id: u.id, name: u.name, email: u.email, role: u.role, password: '' }
+                        : { name: '', email: '', role: 'editor', password: '' },
+            };
+        },
+
+        async saveUser() {
+            this.busy = true; this.userForm.error = '';
+            const d = this.userForm.data;
+            try {
+                if (d.id) await api('PUT', `/api/admin/users/${d.id}`, d);
+                else await api('POST', '/api/admin/users', d);
+                this.userForm.open = false;
+                this.toast(d.id ? 'Usuario actualizado' : 'Usuario creado');
+                if (d.id === this.user.id) this.user = (await api('GET', '/api/me')).user;
+                await this.loadUsers();
+            } catch (e) { this.userForm.error = e.message; }
             this.busy = false;
         },
 

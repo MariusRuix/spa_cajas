@@ -1,21 +1,42 @@
-/* Ajustes del dashboard sobre Tabler, con el índigo de la landing */
+/* Panel con la paleta de la marca Royal Vault (azul marino + plata) */
+@font-face { font-family: "Cinzel"; src: url("../fonts/cinzel.woff2") format("woff2"); font-weight: 400 900; font-display: swap; }
 :root, [data-bs-theme] {
-    --tblr-primary: #6366f1;
-    --tblr-primary-rgb: 99, 102, 241;
+    --tblr-primary: #1f3a6b;
+    --tblr-primary-rgb: 31, 58, 107;
     --tblr-primary-fg: #fff;
+    --tblr-primary-darken: #142a52;
+    --tblr-link-color: #1f3a6b;
+    --tblr-link-color-rgb: 31, 58, 107;
 }
+[data-bs-theme="dark"] {
+    --tblr-primary: #9cc0ff;
+    --tblr-primary-rgb: 156, 192, 255;
+    --tblr-primary-fg: #020b1d;
+    --tblr-link-color: #9cc0ff;
+    --tblr-link-color-rgb: 156, 192, 255;
+}
+/* Barra lateral en el azul noche del logotipo */
+.navbar-vertical.navbar-expand-lg { background: #061430 !important; border-right: 1px solid rgba(195, 202, 213, .14); }
+.navbar-vertical .nav-link { color: #c3cad5; }
+.navbar-vertical .nav-item.active .nav-link, .navbar-vertical .nav-link:hover { color: #f2f4f7; }
+.navbar-vertical .nav-item.active .nav-link::after { border-color: #c3cad5 !important; }
+.brand-word { font-family: "Cinzel", serif; font-weight: 600; letter-spacing: .1em; font-size: 1.6rem; color: #0b1d3f; }
+[data-bs-theme="dark"] .brand-word { color: #f2f4f7; }
+.brand-word--sm { font-size: 1.05rem; color: #f2f4f7; }
+.brand-emblem { width: 26px; height: auto; }
+::selection { background: #1f3a6b; color: #fff; }
 [x-cloak] { display: none !important; }
 
 .brand-logo {
-    display: inline-block; width: 5rem; height: 5rem; border-radius: 1.25rem;
-    object-fit: cover; box-shadow: 0 10px 24px rgba(2, 11, 29, .35);
+    display: inline-block; width: 5rem; height: 5rem; border-radius: 6px;
+    object-fit: cover; box-shadow: 0 14px 28px -12px rgba(2, 11, 29, .55);
 }
 .brand-logo-sm { width: 2rem; height: 2rem; border-radius: .6rem; box-shadow: none; }
 
 /* Gráfica de barras ligera (sin librerías) */
 .mini-chart { display: flex; align-items: flex-end; gap: 6px; height: 180px; }
 .mini-chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
-.mini-chart-bar { width: 100%; max-width: 28px; border-radius: 6px 6px 2px 2px; background: var(--tblr-primary); opacity: .85; transition: height .3s; }
+.mini-chart-bar { width: 100%; max-width: 28px; border-radius: 6px 6px 2px 2px; background: var(--tblr-primary); opacity: .9; transition: height .3s; }
 .mini-chart-col:hover .mini-chart-bar { opacity: 1; }
 .mini-chart-val { font-size: .7rem; color: var(--tblr-secondary); min-height: 1rem; }
 .mini-chart-label { font-size: .7rem; color: var(--tblr-secondary); margin-top: 4px; }
@@ -44,3 +65,20 @@
 .btn-action.btn-outline-danger { color: var(--tblr-danger); }
 .btn-action.btn-outline-primary:hover { background-color: var(--tblr-primary); border-color: var(--tblr-primary); color: #fff; }
 .btn-action.btn-outline-danger:hover { background-color: var(--tblr-danger); border-color: var(--tblr-danger); color: #fff; }
+
+/* Galería de fotos del producto */
+.gallery-field { padding: .75rem; border: 2px dashed var(--tblr-border-color); border-radius: 10px; transition: border-color .15s, background-color .15s; }
+.gallery-field.is-dragging { border-color: var(--tblr-primary); background: rgba(var(--tblr-primary-rgb), .05); }
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: .6rem; }
+.gallery-thumb { position: relative; margin: 0; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: var(--tblr-bg-surface-secondary); cursor: grab; border: 1px solid var(--tblr-border-color); }
+.gallery-thumb.is-moving { opacity: .4; }
+.gallery-thumb img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.gallery-cover { position: absolute; top: .35rem; left: .35rem; padding: .1rem .4rem; border-radius: 4px; background: var(--tblr-primary); color: var(--tblr-primary-fg); font-size: .6875rem; font-weight: 600; }
+.gallery-tools { position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between; gap: 2px; padding: .3rem; background: linear-gradient(transparent, rgba(2, 11, 29, .75)); opacity: 0; transition: opacity .15s; }
+.gallery-thumb:hover .gallery-tools, .gallery-thumb:focus-within .gallery-tools { opacity: 1; }
+@media (hover: none) { .gallery-tools { opacity: 1; } }
+.gallery-btn { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; padding: 0; border: 0; border-radius: 6px; background: rgba(255, 255, 255, .92); color: #0b1d3f; cursor: pointer; }
+.gallery-btn:disabled { opacity: .35; cursor: default; }
+.gallery-btn--danger { color: #c0262d; }
+.gallery-add { display: grid; place-items: center; aspect-ratio: 1; border: 1px dashed var(--tblr-border-color); border-radius: 8px; background: transparent; color: var(--tblr-secondary); font-size: .8125rem; cursor: pointer; text-align: center; }
+.gallery-add:hover { border-color: var(--tblr-primary); color: var(--tblr-primary); }

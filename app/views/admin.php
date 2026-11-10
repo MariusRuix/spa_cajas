@@ -33,7 +33,7 @@
         <div class="container container-tight py-4">
             <div class="text-center mb-4">
                 <img src="/assets/img/logo-mark.jpg" alt="" width="80" height="80" class="brand-logo">
-                <h1 class="h2 mt-2 mb-0"><?= e($s['brand_name'] ?? '') ?> <span class="text-primary"><?= e($s['brand_highlight'] ?? '') ?></span></h1>
+                <h1 class="brand-word mt-3 mb-0"><?= e(trim(($s['brand_name'] ?? '') . ' ' . ($s['brand_highlight'] ?? ''))) ?></h1>
                 <div class="text-secondary">Panel de control</div>
             </div>
 
@@ -60,7 +60,7 @@
             <form class="card card-md" x-show="needsSetup" @submit.prevent="setup">
                 <div class="card-body">
                     <h2 class="h3 mb-1">Crear administrador</h2>
-                    <p class="text-secondary small mb-4">Primer uso del panel. La clave de instalación está en <code>app/config.php</code> (<code>setup_key</code>).</p>
+                    <p class="text-secondary small mb-4">Primer uso del panel. La clave de instalación es <code>setup_key</code> en <code>app/config.local.php</code>.</p>
                     <div class="mb-3">
                         <label class="form-label">Clave de instalación</label>
                         <input type="text" class="form-control" x-model="auth.setup_key" required>
@@ -96,8 +96,8 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <a href="#/" class="navbar-brand navbar-brand-autodark">
-                <img src="/assets/img/logo-mark.jpg" alt="" width="32" height="32" class="brand-logo brand-logo-sm">
-                <span class="ms-2"><?= e($s['brand_name'] ?? '') ?> <span class="text-primary"><?= e($s['brand_highlight'] ?? '') ?></span></span>
+                <img src="/assets/img/emblem-sm.webp" alt="" width="26" height="32" class="brand-emblem">
+                <span class="ms-2 brand-word brand-word--sm"><?= e(trim(($s['brand_name'] ?? '') . ' ' . ($s['brand_highlight'] ?? ''))) ?></span>
             </a>
             <div class="collapse navbar-collapse" :class="{ show: menuOpen }">
                 <ul class="navbar-nav pt-lg-3">
@@ -281,7 +281,7 @@
                                         <tr>
                                             <template x-for="col in resource.columns" :key="col.key">
                                                 <td :class="[col.class, col.hideSm && 'd-none d-md-table-cell']">
-                                                    <template x-if="col.icon && !(col.imageKey && row[col.imageKey])"><i :class="row[col.key]" class="fa-fw me-1"></i></template>
+                                                    <template x-if="col.icon && !(col.imageKey && row[col.imageKey])"><i :class="row[col.key] || 'ti ti-lock-square-rounded'" class="me-1 fs-2"></i></template>
                                                     <template x-if="col.imageKey && row[col.imageKey]"><span class="avatar avatar-sm rounded" :style="`background-image: url('${row[col.imageKey]}')`"></span></template>
                                                     <span x-text="cell(row, col)"></span>
                                                 </td>
@@ -407,6 +407,46 @@
                     </div>
                 </form>
 
+                <!-- ============ USUARIOS ============ -->
+                <div x-show="view === 'users'">
+                    <div class="d-flex justify-content-end mb-3">
+                        <button class="btn btn-primary" @click="openUser()"><i class="ti ti-user-plus me-1"></i> Nuevo usuario</button>
+                    </div>
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead><tr><th>Nombre</th><th class="d-none d-md-table-cell">Correo</th><th>Rol</th><th class="w-1"></th></tr></thead>
+                                <tbody>
+                                    <template x-for="u in users" :key="u.id">
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="avatar avatar-sm rounded-circle bg-primary-lt" x-text="initials(u.name)"></span>
+                                                    <div>
+                                                        <div class="fw-medium"><span x-text="u.name"></span> <span class="text-secondary small" x-show="u.id === user.id">(tú)</span></div>
+                                                        <div class="small text-secondary d-md-none" x-text="u.email"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="d-none d-md-table-cell text-secondary" x-text="u.email"></td>
+                                            <td><span class="badge" :class="u.role === 'admin' ? 'bg-primary text-primary-fg' : 'bg-secondary-lt'" x-text="roles[u.role] || u.role"></span></td>
+                                            <td>
+                                                <div class="d-flex gap-2 justify-content-end">
+                                                    <button class="btn btn-outline-primary btn-action" @click="openUser(u)" title="Editar"><i class="ti ti-pencil"></i><span class="d-none d-md-inline">Editar</span></button>
+                                                    <button class="btn btn-outline-danger btn-action" @click="askDelete('users', u)" :disabled="u.id === user.id" title="Eliminar"><i class="ti ti-trash"></i><span class="d-none d-md-inline">Eliminar</span></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer text-secondary small">
+                            <strong>Administrador:</strong> acceso completo. <strong>Editor:</strong> mensajes, catálogo y servicios; no ve Configuración, Correo ni Usuarios.
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ============ CUENTA ============ -->
                 <form x-show="view === 'account'" @submit.prevent="changePassword" class="card" style="max-width: 520px">
                     <div class="card-header"><h3 class="card-title">Cambiar contraseña</h3></div>
@@ -488,10 +528,46 @@
                                                 </div>
                                             </div>
                                         </template>
+                                        <template x-if="f.type === 'gallery'">
+                                            <div class="gallery-field" :class="{ 'is-dragging': dragging }"
+                                                 @dragover.prevent="if ($event.dataTransfer.types.includes('Files')) dragging = true"
+                                                 @dragleave.self="dragging = false"
+                                                 @drop.prevent="dragging = false; if ($event.dataTransfer.files.length) uploadGallery($event.dataTransfer.files, f.key)">
+                                                <div class="gallery-grid">
+                                                    <template x-for="(img, i) in form.data[f.key]" :key="img">
+                                                        <figure class="gallery-thumb" draggable="true"
+                                                                @dragstart="dragFrom = i; $event.dataTransfer.effectAllowed = 'move'"
+                                                                @dragover.prevent @drop.prevent.stop="moveImage(f.key, dragFrom, i); dragFrom = null"
+                                                                @dragend="dragFrom = null" :class="{ 'is-moving': dragFrom === i }">
+                                                            <img :src="img" alt="" loading="lazy">
+                                                            <span class="gallery-cover" x-show="i === 0">Portada</span>
+                                                            <figcaption class="gallery-tools">
+                                                                <button type="button" class="gallery-btn" @click="moveImage(f.key, i, i - 1)" :disabled="i === 0" title="Mover a la izquierda" aria-label="Mover a la izquierda"><i class="ti ti-chevron-left"></i></button>
+                                                                <button type="button" class="gallery-btn" @click="moveImage(f.key, i, 0)" x-show="i !== 0" title="Usar como portada" aria-label="Usar como portada"><i class="ti ti-star"></i></button>
+                                                                <button type="button" class="gallery-btn gallery-btn--danger" @click="removeImage(f.key, i)" title="Quitar foto" aria-label="Quitar foto"><i class="ti ti-trash"></i></button>
+                                                                <button type="button" class="gallery-btn" @click="moveImage(f.key, i, i + 1)" :disabled="i === form.data[f.key].length - 1" title="Mover a la derecha" aria-label="Mover a la derecha"><i class="ti ti-chevron-right"></i></button>
+                                                            </figcaption>
+                                                        </figure>
+                                                    </template>
+                                                    <button type="button" class="gallery-add" @click="$refs.galleryInput.click()" :disabled="uploading">
+                                                        <template x-if="!uploading"><span><i class="ti ti-photo-plus d-block fs-1 mb-1"></i>Agregar fotos</span></template>
+                                                        <template x-if="uploading"><span><span class="spinner-border spinner-border-sm d-block mx-auto mb-2"></span><span x-text="`Subiendo ${upload.done + 1} de ${upload.total}`"></span></span></template>
+                                                    </button>
+                                                </div>
+                                                <input type="file" class="d-none" multiple accept="image/jpeg,image/png,image/webp,image/gif" x-ref="galleryInput"
+                                                       @change="uploadGallery($event.target.files, f.key); $event.target.value = ''">
+                                                <div class="input-group input-group-sm mt-2">
+                                                    <input type="url" class="form-control" placeholder="…o agrega una foto por URL: https://…" x-ref="galleryUrl"
+                                                           @keydown.enter.prevent="addImageUrl(f.key, $refs.galleryUrl)">
+                                                    <button type="button" class="btn" @click="addImageUrl(f.key, $refs.galleryUrl)">Agregar</button>
+                                                </div>
+                                                <div class="small text-secondary mt-1" x-text="`${form.data[f.key].length} de 20 fotos`"></div>
+                                            </div>
+                                        </template>
                                         <template x-if="f.type === 'icon'">
                                             <div class="input-group">
-                                                <span class="input-group-text" style="width: 2.75rem"><i :class="form.data[f.key]"></i></span>
-                                                <input type="text" class="form-control" x-model="form.data[f.key]" placeholder="fa-solid fa-vault">
+                                                <span class="input-group-text" style="width: 2.75rem"><i class="fs-2" :class="form.data[f.key] || 'ti ti-lock-square-rounded'"></i></span>
+                                                <input type="text" class="form-control" x-model="form.data[f.key]" placeholder="ti ti-key">
                                             </div>
                                         </template>
                                         <template x-if="['text','number','url'].includes(f.type)">
@@ -506,6 +582,50 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn" @click="form.open = false">Cancelar</button>
+                            <button class="btn btn-primary" :disabled="busy">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ============ MODAL USUARIO ============ -->
+    <template x-if="userForm.open">
+        <div>
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal d-block" tabindex="-1" @keydown.escape.window="userForm.open = false" @click.self="userForm.open = false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <form class="modal-content" @submit.prevent="saveUser">
+                        <div class="modal-header">
+                            <h5 class="modal-title" x-text="userForm.data.id ? 'Editar usuario' : 'Nuevo usuario'"></h5>
+                            <button type="button" class="btn-close" @click="userForm.open = false" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label required">Nombre</label>
+                                <input type="text" class="form-control" x-model="userForm.data.name" required maxlength="80">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label required">Correo</label>
+                                <input type="email" class="form-control" x-model="userForm.data.email" required autocomplete="off">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Rol</label>
+                                <select class="form-select" x-model="userForm.data.role" :disabled="userForm.data.id === user.id">
+                                    <template x-for="(label, key) in roles" :key="key"><option :value="key" x-text="label" :selected="userForm.data.role === key"></option></template>
+                                </select>
+                                <div class="form-hint" x-show="userForm.data.id === user.id">No puedes cambiar tu propio rol.</div>
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label" :class="{ required: !userForm.data.id }" x-text="userForm.data.id ? 'Nueva contraseña (opcional)' : 'Contraseña'"></label>
+                                <input type="password" class="form-control" x-model="userForm.data.password" :required="!userForm.data.id" minlength="10" autocomplete="new-password">
+                                <div class="form-hint" x-text="userForm.data.id ? 'Déjala vacía para no cambiarla. Si la cambias, se cierran sus sesiones abiertas.' : 'Mínimo 10 caracteres. Compártela con la persona por un medio seguro.'"></div>
+                            </div>
+                            <div class="alert alert-danger mt-3 mb-0 py-2" x-show="userForm.error" x-text="userForm.error"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn" @click="userForm.open = false">Cancelar</button>
                             <button class="btn btn-primary" :disabled="busy">Guardar</button>
                         </div>
                     </form>
@@ -553,7 +673,5 @@
     </template>
 </div>
 
-<!-- FontAwesome solo para previsualizar los iconos que usa la landing -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </body>
 </html>
