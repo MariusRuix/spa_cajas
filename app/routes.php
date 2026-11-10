@@ -11,6 +11,7 @@ Flight::route('GET /', function () {
         's'        => settings(),
         'services' => $pdo->query('SELECT * FROM services WHERE active = 1 ORDER BY sort, id')->fetchAll(),
         'products' => $pdo->query('SELECT * FROM products WHERE active = 1 ORDER BY sort, id')->fetchAll(),
+        'gallery'  => gallery_map(),
         'csrf'     => csrf_token(),
     ]);
 });
@@ -90,15 +91,18 @@ Flight::route('POST /api/setup', function () {
     require_csrf();
     $cfg = Flight::get('config');
     if ((int) db()->query('SELECT COUNT(*) FROM users')->fetchColumn() > 0) {
-        Flight::jsonHalt(['error' => 'Ya existe un administrador.'], 403);
+        Flight::jsonHalt(['error' => 'El panel ya está instalado. Pide a un administrador que te cree un usuario.'], 403);
     }
     if (rate_limited('setup', 5, 15)) {
         Flight::jsonHalt(['error' => 'Demasiados intentos. Espera unos minutos.'], 429);
     }
     $data = body();
+    if (($cfg['setup_key'] ?? '') === '') {
+        Flight::jsonHalt(['error' => 'Instalación deshabilitada: define setup_key en app/config.local.php.'], 403);
+    }
     if (!hash_equals($cfg['setup_key'], (string) ($data['setup_key'] ?? ''))) {
         rate_hit('setup');
-        Flight::jsonHalt(['error' => 'Clave de instalación incorrecta (ver app/config.php).'], 403);
+        Flight::jsonHalt(['error' => 'Clave de instalación incorrecta (ver app/config.local.php).'], 403);
     }
     [$clean, $errors] = validate([
         'name'  => ['type' => 'text', 'label' => 'Nombre', 'required' => true, 'max' => 80],
@@ -114,11 +118,10 @@ Flight::route('POST /api/setup', function () {
     if ($errors) {
         Flight::jsonHalt(['error' => reset($errors)], 422);
     }
-    db()->prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)')
+    db()->prepare("INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, 'admin')")
         ->execute([$clean['name'], strtolower($clean['email']), password_hash($password, PASSWORD_DEFAULT)]);
 
-    session_regenerate_id(true);
-    $_SESSION['user_id'] = (int) db()->lastInsertId();
+    login_user((int) db()->lastInsertId());
     Flight::json(['user' => current_user()]);
 });
 
@@ -142,14 +145,13 @@ Flight::route('POST /api/login', function () {
             ->execute([password_hash((string) $data['password'], PASSWORD_DEFAULT), $user['id']]);
     }
     rate_clear('login');
-    session_regenerate_id(true);   // evita fijación de sesión
-    $_SESSION['user_id'] = (int) $user['id'];
+    login_user((int) $user['id']);
     Flight::json(['user' => current_user()]);
 });
 
 Flight::route('POST /api/logout', function () {
     require_csrf();
-    unset($_SESSION['user_id']);
+    unset($_SESSION['user_id'], $_SESSION['uv']);
     session_regenerate_id(true);
     Flight::json(['ok' => true]);
 });
@@ -231,7 +233,11 @@ Flight::group('/api/admin', function () {
         if ($clean['smtp_pass'] === '') {
             unset($clean['smtp_pass']);
         } else {
-            $clean['smtp_pass'] = secret_encrypt(str_replace(' ', '', $clean['smtp_pass'])); // Gmail muestra la clave con espacios
+            try {
+                $clean['smtp_pass'] = secret_encrypt(str_replace(' ', '', $clean['smtp_pass'])); // Gmail muestra la clave con espacios
+            } catch (RuntimeException $e) {
+                Flight::jsonHalt(['error' => $e->getMessage()], 422);
+            }
         }
         $st = db()->prepare('INSERT INTO settings (key, value) VALUES (?, ?)
                              ON CONFLICT(key) DO UPDATE SET value = excluded.value');
@@ -280,9 +286,97 @@ Flight::group('/api/admin', function () {
         if (strlen($new) < 10) {
             Flight::jsonHalt(['error' => 'La nueva contraseña debe tener al menos 10 caracteres'], 422);
         }
-        db()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+        // Nueva contraseña: se cierran las demás sesiones de este usuario y esta sigue activa
+        db()->prepare('UPDATE users SET password_hash = ?, session_version = session_version + 1 WHERE id = ?')
             ->execute([password_hash($new, PASSWORD_DEFAULT), $user['id']]);
-        session_regenerate_id(true);
+        login_user((int) $user['id']);
+        Flight::json(['ok' => true]);
+    });
+
+    // ---- Usuarios del panel (solo administradores) ----
+    $userFields = [
+        'name'  => ['type' => 'text', 'label' => 'Nombre', 'required' => true, 'max' => 80],
+        'email' => ['type' => 'text', 'label' => 'Correo', 'required' => true, 'max' => 120],
+        'role'  => ['type' => 'enum', 'label' => 'Rol', 'options' => array_keys(roles())],
+    ];
+    $checkUser = function (array $data, ?int $id) use ($userFields): array {
+        [$clean, $errors] = validate($userFields, $data);
+        $clean['email'] = strtolower($clean['email']);
+        if (!$errors && !filter_var($clean['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Correo no válido';
+        }
+        $st = db()->prepare('SELECT COUNT(*) FROM users WHERE email = ? AND id <> ?');
+        $st->execute([$clean['email'], $id ?? 0]);
+        if (!$errors && (int) $st->fetchColumn() > 0) {
+            $errors['email'] = 'Ya existe un usuario con ese correo';
+        }
+        $password = (string) ($data['password'] ?? '');
+        if (($id === null || $password !== '') && strlen($password) < 10) {
+            $errors['password'] = 'La contraseña debe tener al menos 10 caracteres';
+        }
+        if ($errors) {
+            Flight::jsonHalt(['error' => reset($errors), 'fields' => $errors], 422);
+        }
+        return [$clean, $password];
+    };
+    $adminCount = fn(): int => (int) db()->query("SELECT COUNT(*) FROM users WHERE role = 'admin'")->fetchColumn();
+
+    Flight::route('GET /users', function () {
+        Flight::json([
+            'users' => db()->query('SELECT id, name, email, role, created_at FROM users ORDER BY name')->fetchAll(),
+            'roles' => roles(),
+        ]);
+    });
+
+    Flight::route('POST /users', function () use ($checkUser) {
+        [$clean, $password] = $checkUser(body(), null);
+        db()->prepare('INSERT INTO users (name, email, role, password_hash) VALUES (?, ?, ?, ?)')
+            ->execute([$clean['name'], $clean['email'], $clean['role'], password_hash($password, PASSWORD_DEFAULT)]);
+        Flight::json(['id' => (int) db()->lastInsertId()], 201);
+    });
+
+    Flight::route('PUT /users/@id:[0-9]+', function (string $id) use ($checkUser, $adminCount) {
+        $id = (int) $id;
+        $me = current_user();
+        $st = db()->prepare('SELECT * FROM users WHERE id = ?');
+        $st->execute([$id]);
+        $old = $st->fetch() ?: Flight::jsonHalt(['error' => 'Usuario no encontrado'], 404);
+        [$clean, $password] = $checkUser(body(), $id);
+
+        if ($old['role'] === 'admin' && $clean['role'] !== 'admin' && $adminCount() <= 1) {
+            Flight::jsonHalt(['error' => 'Debe quedar al menos un administrador.'], 422);
+        }
+        if ($id === (int) $me['id'] && $clean['role'] !== 'admin') {
+            Flight::jsonHalt(['error' => 'No puedes quitarte a ti mismo el rol de administrador.'], 422);
+        }
+        // Cambiar contraseña o rol cierra las sesiones abiertas de ese usuario
+        $bump = ($password !== '' || $clean['role'] !== $old['role']) ? 1 : 0;
+        db()->prepare('UPDATE users SET name = ?, email = ?, role = ?, session_version = session_version + ? WHERE id = ?')
+            ->execute([$clean['name'], $clean['email'], $clean['role'], $bump, $id]);
+        if ($password !== '') {
+            db()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([password_hash($password, PASSWORD_DEFAULT), $id]);
+        }
+        if ($id === (int) $me['id'] && $bump) {
+            login_user($id); // tu propia sesión sigue abierta
+        }
+        Flight::json(['ok' => true]);
+    });
+
+    Flight::route('DELETE /users/@id:[0-9]+', function (string $id) use ($adminCount) {
+        $id = (int) $id;
+        if ($id === (int) current_user()['id']) {
+            Flight::jsonHalt(['error' => 'No puedes eliminar tu propio usuario.'], 422);
+        }
+        $st = db()->prepare('SELECT role FROM users WHERE id = ?');
+        $st->execute([$id]);
+        $role = $st->fetchColumn();
+        if ($role === false) {
+            Flight::jsonHalt(['error' => 'Usuario no encontrado'], 404);
+        }
+        if ($role === 'admin' && $adminCount() <= 1) {
+            Flight::jsonHalt(['error' => 'Debe quedar al menos un administrador.'], 422);
+        }
+        db()->prepare('DELETE FROM users WHERE id = ?')->execute([$id]); // su sesión se cierra en la siguiente petición
         Flight::json(['ok' => true]);
     });
 
@@ -304,7 +398,7 @@ Flight::group('/api/admin', function () {
 
     // Subida de imágenes (multipart/form-data, campo "file")
     Flight::route('POST /upload', function () {
-        if (rate_limited('upload', 60, 60)) {
+        if (rate_limited('upload', 300, 60)) {
             Flight::jsonHalt(['error' => 'Demasiadas subidas, espera un momento.'], 429);
         }
         $folder = (string) (Flight::request()->query['folder'] ?? 'misc');
@@ -319,28 +413,59 @@ Flight::group('/api/admin', function () {
 
     Flight::route('GET /r/@name:[a-z_]+', function (string $name) use ($resource) {
         $res = $resource($name);
-        Flight::json(db()->query("SELECT * FROM {$res['table']} ORDER BY sort, id")->fetchAll());
+        $rows = db()->query("SELECT * FROM {$res['table']} ORDER BY sort, id")->fetchAll();
+        if (!empty($res['gallery'])) {
+            $map = gallery_map();
+            foreach ($rows as &$row) {
+                $row['images'] = $map[(int) $row['id']] ?? [];
+            }
+            unset($row);
+        }
+        Flight::json($rows);
     });
 
     Flight::route('POST /r/@name:[a-z_]+', function (string $name) use ($resource) {
         $res = $resource($name);
-        [$clean, $errors] = validate($res['fields'], body());
+        $data = body();
+        [$clean, $errors] = validate($res['fields'], $data);
+        $images = null;
+        if (!empty($res['gallery']) && array_key_exists('images', $data)) {
+            [$images, $galleryError] = gallery_clean($data['images']);
+            if ($galleryError) {
+                $errors['images'] = $galleryError;
+            }
+        }
         if ($errors) {
             Flight::jsonHalt(['error' => reset($errors), 'fields' => $errors], 422);
         }
         $cols = array_keys($clean);
         $sql = sprintf('INSERT INTO %s (%s) VALUES (%s)', $res['table'], implode(', ', $cols), implode(', ', array_fill(0, count($cols), '?')));
         db()->prepare($sql)->execute(array_values($clean));
-        Flight::json(['id' => (int) db()->lastInsertId()], 201);
+        $id = (int) db()->lastInsertId();
+        if ($images !== null) {
+            gallery_sync($id, $images);
+        }
+        Flight::json(['id' => $id], 201);
     });
 
     Flight::route('PUT /r/@name:[a-z_]+/@id:[0-9]+', function (string $name, string $id) use ($resource, $fetchRow, $imageFields) {
         $res = $resource($name);
-        [$clean, $errors] = validate($res['fields'], body());
+        $data = body();
+        [$clean, $errors] = validate($res['fields'], $data);
+        $images = null;
+        if (!empty($res['gallery']) && array_key_exists('images', $data)) {
+            [$images, $galleryError] = gallery_clean($data['images']);
+            if ($galleryError) {
+                $errors['images'] = $galleryError;
+            }
+        }
         if ($errors) {
             Flight::jsonHalt(['error' => reset($errors), 'fields' => $errors], 422);
         }
         $old = $fetchRow($res, (int) $id);
+        if (!$old) {
+            Flight::jsonHalt(['error' => 'Registro no encontrado'], 404);
+        }
         // Los nombres de columna vienen de resources(), nunca del usuario.
         $set = implode(', ', array_map(fn($c) => "$c = ?", array_keys($clean)));
         $sql = "UPDATE {$res['table']} SET $set, updated_at = datetime('now') WHERE id = ?";
@@ -351,13 +476,20 @@ Flight::group('/api/admin', function () {
                 delete_upload($old[$f]);
             }
         }
+        if ($images !== null) {
+            gallery_sync((int) $id, $images);
+        }
         Flight::json(['ok' => true]);
     });
 
     Flight::route('DELETE /r/@name:[a-z_]+/@id:[0-9]+', function (string $name, string $id) use ($resource, $fetchRow, $imageFields) {
         $res = $resource($name);
         $old = $fetchRow($res, (int) $id);
+        $photos = !empty($res['gallery']) ? gallery_get((int) $id) : [];
         db()->prepare("DELETE FROM {$res['table']} WHERE id = ?")->execute([(int) $id]);
+        foreach ($photos as $photo) {
+            delete_upload($photo);
+        }
         foreach ($imageFields($res) as $f) {
             delete_upload($old[$f] ?? '');
         }
@@ -367,7 +499,10 @@ Flight::group('/api/admin', function () {
 }, [
     // Middleware del grupo: sesión obligatoria + CSRF en métodos que modifican
     function () {
-        require_auth();
+        $user = require_auth();
+        if ($user['role'] !== 'admin' && admin_only_path(Flight::request()->url)) {
+            Flight::jsonHalt(['error' => 'Tu usuario no tiene permiso para esta sección.'], 403);
+        }
         if (Flight::request()->method !== 'GET') {
             require_csrf();
         }

@@ -29,6 +29,8 @@ final class Database
             self::seed($pdo);
         }
         self::addMissingSettings($pdo);
+        self::upgradeLegacyContent($pdo);
+        self::moveCoverImagesToGallery($pdo);
         return $pdo;
     }
 
@@ -40,6 +42,8 @@ final class Database
                 name TEXT NOT NULL,
                 email TEXT NOT NULL UNIQUE,
                 password_hash TEXT NOT NULL,
+                role TEXT NOT NULL DEFAULT 'admin',
+                session_version INTEGER NOT NULL DEFAULT 1,
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
             CREATE TABLE IF NOT EXISTS settings (
@@ -50,7 +54,7 @@ final class Database
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 description TEXT NOT NULL DEFAULT '',
-                icon TEXT NOT NULL DEFAULT 'fa-solid fa-wrench',
+                icon TEXT NOT NULL DEFAULT 'ti ti-tool',
                 cta_label TEXT NOT NULL DEFAULT 'Más información',
                 wa_message TEXT NOT NULL DEFAULT '',
                 sort INTEGER NOT NULL DEFAULT 0,
@@ -64,7 +68,7 @@ final class Database
                 badge TEXT NOT NULL DEFAULT '',
                 badge_style TEXT NOT NULL DEFAULT 'primary',
                 features TEXT NOT NULL DEFAULT '',
-                icon TEXT NOT NULL DEFAULT 'fa-solid fa-vault',
+                icon TEXT NOT NULL DEFAULT '',
                 image_url TEXT NOT NULL DEFAULT '',
                 sort INTEGER NOT NULL DEFAULT 0,
                 active INTEGER NOT NULL DEFAULT 1,
@@ -86,7 +90,82 @@ final class Database
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
             CREATE INDEX IF NOT EXISTS idx_rate_limits ON rate_limits (bucket, ip, created_at);
+            CREATE TABLE IF NOT EXISTS product_images (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+                path TEXT NOT NULL,
+                sort INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+            CREATE INDEX IF NOT EXISTS idx_product_images ON product_images (product_id, sort);
         SQL);
+
+        // Columnas agregadas después (usuarios con rol y cierre de sesiones)
+        $cols = array_column($pdo->query('PRAGMA table_info(users)')->fetchAll(), 'name');
+        if (!in_array('role', $cols, true)) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'");
+        }
+        if (!in_array('session_version', $cols, true)) {
+            $pdo->exec('ALTER TABLE users ADD COLUMN session_version INTEGER NOT NULL DEFAULT 1');
+        }
+    }
+
+    /**
+     * Actualiza el contenido de ejemplo de la maqueta original (afirmaciones sin respaldo e
+     * iconos de Font Awesome) SOLO cuando sigue sin cambios; lo que el dueño ya editó no se toca.
+     */
+    private static function upgradeLegacyContent(PDO $pdo): void
+    {
+        if ($pdo->query("SELECT value FROM settings WHERE key = 'content_version'")->fetchColumn() === '2') {
+            return;
+        }
+        $settings = [
+            'topbar_text' => ['Servicio de Aperturas y Emergencias Técnicas 24/7:', 'Aperturas de emergencia 24/7'],
+            'hero_badge' => ['Innovación en Seguridad Física', 'Cajas fuertes y cajas de seguridad · Yucatán'],
+            'hero_title' => ['Protege tu patrimonio con', 'Tu seguridad,'],
+            'hero_highlight' => ['expertos certificados', 'nuestro compromiso'],
+            'hero_text' => ['Venta de cajas fuertes de alta gama, mantenimiento preventivo y aperturas de emergencia sin daño. Soluciones rápidas, discretas y garantizadas para hogares y empresas.', 'Venta, reparación, mantenimiento y apertura de cajas fuertes y cajas de seguridad para hogares y negocios. Atención de emergencias las 24 horas.'],
+            'about_text' => ['Combinamos la experiencia técnica de nuestra trayectoria con tecnología moderna para ofrecerte un servicio impecable. Cada apertura y cada instalación cuenta con garantía por escrito.', 'cuidamos tus bienes con discreción y trato directo: te ayudamos a elegir la caja adecuada y nos encargamos de su instalación, mantenimiento o apertura.'],
+        ];
+        $st = $pdo->prepare('UPDATE settings SET value = ? WHERE key = ? AND value = ?');
+        foreach ($settings as $key => [$old, $new]) {
+            $st->execute([$new, $key, $old]);
+        }
+        $pdo->exec("DELETE FROM settings WHERE key LIKE 'stat\\_%' ESCAPE '\\'");
+
+        $icons = [
+            'fa-solid fa-unlock-keyhole'     => 'ti ti-lock-open',
+            'fa-solid fa-screwdriver-wrench' => 'ti ti-tools',
+            'fa-solid fa-key'                => 'ti ti-key',
+            'fa-solid fa-wrench'             => 'ti ti-tool',
+            'fa-solid fa-vault'              => '',
+        ];
+        foreach (['services', 'products'] as $table) {
+            $st = $pdo->prepare("UPDATE $table SET icon = ? WHERE icon = ?");
+            foreach ($icons as $old => $new) {
+                $st->execute([$new, $old]);
+            }
+            // Cualquier otro icono de Font Awesome ya no se carga: vuelve al icono por defecto.
+            $pdo->exec("UPDATE $table SET icon = '' WHERE icon LIKE 'fa-%'");
+        }
+        $pdo->prepare('UPDATE products SET features = ? WHERE features = ?')
+            ->execute(["Capacidad: 95 Litros\nPlaca de acero templado", "Capacidad: 95 Litros\nPlaca de acero templado\nCertificación Grado III"]);
+
+        $pdo->exec("INSERT INTO settings (key, value) VALUES ('content_version', '2')
+                    ON CONFLICT(key) DO UPDATE SET value = excluded.value");
+    }
+
+    /** Una sola vez: la imagen única que ya tenía cada producto pasa a ser la primera de su galería. */
+    private static function moveCoverImagesToGallery(PDO $pdo): void
+    {
+        if ($pdo->query("SELECT value FROM settings WHERE key = 'gallery_version'")->fetchColumn() === '1') {
+            return;
+        }
+        $pdo->exec("INSERT INTO product_images (product_id, path, sort)
+                    SELECT id, image_url, 0 FROM products
+                    WHERE image_url <> '' AND id NOT IN (SELECT product_id FROM product_images)");
+        $pdo->exec("INSERT INTO settings (key, value) VALUES ('gallery_version', '1')
+                    ON CONFLICT(key) DO UPDATE SET value = excluded.value");
     }
 
     /** Agrega ajustes nuevos (SEO, analítica…) a bases de datos ya existentes. */
@@ -113,20 +192,14 @@ final class Database
             'brand_highlight' => 'VAULT',
             'brand_tagline'   => 'Cajas de Seguridad Yucatán',
             'site_title'      => 'Royal Vault | Cajas Fuertes y Cajas de Seguridad en Yucatán',
-            'topbar_text'     => 'Servicio de Aperturas y Emergencias Técnicas 24/7:',
+            'topbar_text'     => 'Aperturas de emergencia 24/7',
             'phone_display'   => '+34 900 987 654',
             'whatsapp'        => '34900987654',
-            'hero_badge'      => 'Innovación en Seguridad Física',
-            'hero_title'      => 'Protege tu patrimonio con',
-            'hero_highlight'  => 'expertos certificados',
-            'hero_text'       => 'Venta de cajas fuertes de alta gama, mantenimiento preventivo y aperturas de emergencia sin daño. Soluciones rápidas, discretas y garantizadas para hogares y empresas.',
-            'stat_1_value'    => '+15 Años',
-            'stat_1_label'    => 'De trayectoria',
-            'stat_2_value'    => '100%',
-            'stat_2_label'    => 'Discreción',
-            'stat_3_value'    => '24/7',
-            'stat_3_label'    => 'Emergencias',
-            'about_text'      => 'Combinamos la experiencia técnica de nuestra trayectoria con tecnología moderna para ofrecerte un servicio impecable. Cada apertura y cada instalación cuenta con garantía por escrito.',
+            'hero_badge'      => 'Cajas fuertes y cajas de seguridad · Yucatán',
+            'hero_title'      => 'Tu seguridad,',
+            'hero_highlight'  => 'nuestro compromiso',
+            'hero_text'       => 'Venta, reparación, mantenimiento y apertura de cajas fuertes y cajas de seguridad para hogares y negocios. Atención de emergencias las 24 horas.',
+            'about_text'      => 'cuidamos tus bienes con discreción y trato directo: te ayudamos a elegir la caja adecuada y nos encargamos de su instalación, mantenimiento o apertura.',
             'address'         => 'Paseo de la Castellana #120, Local 4, 28046 Madrid.',
             'hours'           => "Lunes a Viernes: 9:00 AM – 7:00 PM\nSábados: 9:00 AM – 2:00 PM",
             'maps_url'        => 'https://maps.google.com',
@@ -141,9 +214,9 @@ final class Database
         }
 
         $services = [
-            ['Aperturas de Emergencia', 'Apertura técnica especializada por pérdida de claves, fallas electrónicas o baterías agotadas. Evitamos daños estructurales innecesarios en tu caja fuerte.', 'fa-solid fa-unlock-keyhole', 'Solicitar Apertura', 'Hola, necesito una apertura de emergencia.'],
-            ['Mantenimiento Preventivo', 'Calibración de pestillos, lubricación de engranajes de alta precisión y revisión de circuitos electrónicos para prevenir fallos mecánicos imprevistos.', 'fa-solid fa-screwdriver-wrench', 'Agendar Revisión', 'Hola, me interesa mantenimiento preventivo.'],
-            ['Reparación y Conversión', 'Actualización de sistemas mecánicos tradicionales a cerraduras biométricas o digitales avanzadas. Cambio de combinación por seguridad corporativa.', 'fa-solid fa-key', 'Cotizar Reparación', 'Hola, quiero actualizar o reparar mi cerradura.'],
+            ['Aperturas de Emergencia', 'Apertura técnica especializada por pérdida de claves, fallas electrónicas o baterías agotadas. Evitamos daños estructurales innecesarios en tu caja fuerte.', 'ti ti-lock-open', 'Solicitar Apertura', 'Hola, necesito una apertura de emergencia.'],
+            ['Mantenimiento Preventivo', 'Calibración de pestillos, lubricación de engranajes de alta precisión y revisión de circuitos electrónicos para prevenir fallos mecánicos imprevistos.', 'ti ti-tools', 'Agendar Revisión', 'Hola, me interesa mantenimiento preventivo.'],
+            ['Reparación y Conversión', 'Actualización de sistemas mecánicos tradicionales a cerraduras biométricas o digitales avanzadas. Cambio de combinación por seguridad corporativa.', 'ti ti-key', 'Cotizar Reparación', 'Hola, quiero actualizar o reparar mi cerradura.'],
         ];
         $st = $pdo->prepare('INSERT INTO services (title, description, icon, cta_label, wa_message, sort) VALUES (?, ?, ?, ?, ?, ?)');
         foreach ($services as $i => $s) {
@@ -152,7 +225,7 @@ final class Database
 
         $products = [
             ['NovaSecure Home Bio', 'Cerradura biométrica + código digital de alta velocidad.', 'Residencial', 'primary', "Capacidad: 30 Litros\nProtección ignífuga 60 min\nAnclaje de alta resistencia"],
-            ['Enterprise Pro 500', 'Doble combinación mecánica y pestillería activa anti-taladro.', 'Oficina / Negocio', 'dark', "Capacidad: 95 Litros\nPlaca de acero templado\nCertificación Grado III"],
+            ['Enterprise Pro 500', 'Doble combinación mecánica y pestillería activa anti-taladro.', 'Oficina / Negocio', 'dark', "Capacidad: 95 Litros\nPlaca de acero templado"],
             ['Titan Fire Shield 120', 'Protección térmica extrema para documentos críticos y efectivo.', 'Ignífuga Avanzada', 'primary', "Capacidad: 60 Litros\nResistencia a fuego 120 min\nCierre hermético reforzado"],
         ];
         $st = $pdo->prepare('INSERT INTO products (name, description, badge, badge_style, features, sort) VALUES (?, ?, ?, ?, ?, ?)');

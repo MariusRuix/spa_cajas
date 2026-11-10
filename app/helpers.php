@@ -31,11 +31,21 @@ function set_setting(string $key, string $value): void
     settings(true);
 }
 
-/** Cifra un secreto (AES-256-GCM) con app_key de config.php. */
-function secret_encrypt(string $plain): string
+/** Llave de cifrado derivada de app_key (config.local.php). */
+function secret_key(): string
 {
     $cfg = Flight::get('config');
-    $key = hash('sha256', $cfg['app_key'] ?? $cfg['setup_key'], true);
+    $base = ($cfg['app_key'] ?? '') !== '' ? $cfg['app_key'] : ($cfg['setup_key'] ?? '');
+    if ($base === '') {
+        throw new RuntimeException('Falta app_key en app/config.local.php.');
+    }
+    return hash('sha256', $base, true);
+}
+
+/** Cifra un secreto (AES-256-GCM) con app_key de config.local.php. */
+function secret_encrypt(string $plain): string
+{
+    $key = secret_key();
     $iv  = random_bytes(12);
     $ct  = openssl_encrypt($plain, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
     return 'enc:' . base64_encode($iv . $tag . $ct);
@@ -46,8 +56,7 @@ function secret_decrypt(string $stored): string
     if (!str_starts_with($stored, 'enc:')) {
         return $stored;
     }
-    $cfg = Flight::get('config');
-    $key = hash('sha256', $cfg['app_key'] ?? $cfg['setup_key'], true);
+    $key = secret_key();
     $raw = base64_decode(substr($stored, 4), true) ?: '';
     if (strlen($raw) < 29) {
         return '';
@@ -102,9 +111,26 @@ function current_user(): ?array
     if (empty($_SESSION['user_id'])) {
         return null;
     }
-    $st = db()->prepare('SELECT id, name, email FROM users WHERE id = ?');
+    $st = db()->prepare('SELECT id, name, email, role, session_version FROM users WHERE id = ?');
     $st->execute([$_SESSION['user_id']]);
-    return $st->fetch() ?: null;
+    $user = $st->fetch();
+    // Usuario eliminado, o su contraseña/rol cambió desde otra sesión: se cierra esta sesión.
+    if (!$user || (int) ($_SESSION['uv'] ?? 0) !== (int) $user['session_version']) {
+        unset($_SESSION['user_id'], $_SESSION['uv']);
+        return null;
+    }
+    unset($user['session_version']);
+    return $user;
+}
+
+/** Inicia la sesión de un usuario (tras login o instalación). */
+function login_user(int $id): void
+{
+    session_regenerate_id(true);   // evita fijación de sesión
+    $st = db()->prepare('SELECT session_version FROM users WHERE id = ?');
+    $st->execute([$id]);
+    $_SESSION['user_id'] = $id;
+    $_SESSION['uv'] = (int) $st->fetchColumn();
 }
 
 /** Corta la petición si no hay sesión de administrador. */
@@ -115,6 +141,18 @@ function require_auth(): array
         Flight::jsonHalt(['error' => 'No autenticado'], 401);
     }
     return $user;
+}
+
+/** Roles del panel. admin: todo. editor: mensajes, catálogo y servicios. */
+function roles(): array
+{
+    return ['admin' => 'Administrador', 'editor' => 'Editor'];
+}
+
+/** Rutas de /api/admin que solo puede usar un administrador. */
+function admin_only_path(string $url): bool
+{
+    return (bool) preg_match('#^/api/admin/(settings|mail|users)(/|\?|$)#', $url);
 }
 
 /** ¿Se superó el límite de eventos para esta IP? */
@@ -219,6 +257,7 @@ function resources(): array
     return [
         'products' => [
             'table'  => 'products',
+            'gallery' => true,   // varias fotos por producto (tabla product_images)
             'fields' => [
                 'name'        => ['type' => 'text', 'label' => 'Nombre', 'required' => true, 'max' => 120],
                 'description' => ['type' => 'text', 'label' => 'Descripción', 'max' => 400],
@@ -226,7 +265,6 @@ function resources(): array
                 'badge_style' => ['type' => 'enum', 'options' => ['primary', 'dark']],
                 'features'    => ['type' => 'text', 'label' => 'Características', 'max' => 1000],
                 'icon'        => ['type' => 'text', 'label' => 'Icono', 'max' => 60],
-                'image_url'   => ['type' => 'image', 'label' => 'Imagen'],
                 'sort'        => ['type' => 'int'],
                 'active'      => ['type' => 'bool'],
             ],
@@ -262,12 +300,6 @@ function setting_fields(): array
         'hero_title'      => $text('Título portada'),
         'hero_highlight'  => $text('Título portada (resaltado)'),
         'hero_text'       => $text('Texto portada', 600),
-        'stat_1_value'    => $text('Dato 1', 20),
-        'stat_1_label'    => $text('Dato 1 etiqueta', 40),
-        'stat_2_value'    => $text('Dato 2', 20),
-        'stat_2_label'    => $text('Dato 2 etiqueta', 40),
-        'stat_3_value'    => $text('Dato 3', 20),
-        'stat_3_label'    => $text('Dato 3 etiqueta', 40),
         'about_text'      => $text('Texto "Por qué elegirnos" (va después de "En MARCA…")', 800),
         'address'         => $text('Dirección', 200),
         'hours'           => $text('Horarios', 300),
@@ -475,4 +507,70 @@ function store_upload(array $file, string $folder): string
     }
     @chmod("$absDir/$name.$ext", 0644);
     return "$relDir/$name.$ext";
+}
+
+// ---- Galería de fotos por producto ------------------------------------------
+
+const GALLERY_MAX = 20;
+
+/** Fotos de todos los productos: [product_id => [ruta, ...]] en su orden. */
+function gallery_map(): array
+{
+    $map = [];
+    foreach (db()->query('SELECT product_id, path FROM product_images ORDER BY product_id, sort, id') as $r) {
+        $map[(int) $r['product_id']][] = $r['path'];
+    }
+    return $map;
+}
+
+function gallery_get(int $productId): array
+{
+    $st = db()->prepare('SELECT path FROM product_images WHERE product_id = ? ORDER BY sort, id');
+    $st->execute([$productId]);
+    return $st->fetchAll(PDO::FETCH_COLUMN);
+}
+
+/** Valida la lista de fotos enviada por el panel. Devuelve [rutas, error|null]. */
+function gallery_clean($images): array
+{
+    if (!is_array($images)) {
+        return [[], 'La lista de fotos no es válida.'];
+    }
+    $clean = [];
+    foreach ($images as $img) {
+        $img = trim((string) $img);
+        if ($img === '' || in_array($img, $clean, true)) {
+            continue;
+        }
+        if (safe_image($img) === '') {
+            return [[], 'Una de las fotos no es válida (debe ser una imagen subida o una URL https://).'];
+        }
+        $clean[] = $img;
+    }
+    if (count($clean) > GALLERY_MAX) {
+        return [[], 'Máximo ' . GALLERY_MAX . ' fotos por producto.'];
+    }
+    return [$clean, null];
+}
+
+/**
+ * Guarda la galería de un producto en el orden recibido (la primera es la portada),
+ * borra del servidor las fotos subidas que se quitaron y actualiza products.image_url.
+ */
+function gallery_sync(int $productId, array $paths): void
+{
+    $old = gallery_get($productId);
+    $pdo = db();
+    $pdo->beginTransaction();
+    $pdo->prepare('DELETE FROM product_images WHERE product_id = ?')->execute([$productId]);
+    $ins = $pdo->prepare('INSERT INTO product_images (product_id, path, sort) VALUES (?, ?, ?)');
+    foreach (array_values($paths) as $i => $path) {
+        $ins->execute([$productId, $path, $i]);
+    }
+    $pdo->prepare("UPDATE products SET image_url = ?, updated_at = datetime('now') WHERE id = ?")
+        ->execute([$paths[0] ?? '', $productId]);
+    $pdo->commit();
+    foreach (array_diff($old, $paths) as $removed) {
+        delete_upload($removed);
+    }
 }
