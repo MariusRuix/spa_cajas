@@ -267,18 +267,37 @@
                                 <input type="search" class="form-control" placeholder="Buscar…" x-model="search">
                             </div>
                         </div>
+                        <div class="card-body py-2 small text-secondary border-bottom" x-show="rows.length > 1">
+                            <i class="ti ti-arrows-sort me-1"></i>
+                            <span x-show="canReorder">Arrastra <i class="ti ti-grip-vertical"></i> (o usa las flechas) para cambiar el orden en el sitio. Se guarda solo.</span>
+                            <span x-show="!canReorder">Borra la búsqueda para poder cambiar el orden.</span>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-vcenter card-table">
                                 <thead>
                                     <tr>
+                                        <th class="w-1"><span class="visually-hidden">Orden</span></th>
                                         <template x-for="col in resource.columns" :key="col.key"><th :class="col.hideSm && 'd-none d-md-table-cell'" x-text="col.label"></th></template>
                                         <th class="w-1">Activo</th>
                                         <th class="w-1"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <template x-for="row in filteredRows" :key="row.id">
-                                        <tr>
+                                    <template x-for="(row, idx) in filteredRows" :key="row.id">
+                                        <tr :class="{ 'is-dragging-row': dragRowId === row.id }"
+                                            @dragover.prevent="dragOverRow(row, $event)" @drop.prevent="dropRow()">
+                                            <td class="drag-cell">
+                                                <template x-if="canReorder">
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="drag-handle" draggable="true" title="Arrastra para cambiar el orden"
+                                                              @dragstart="dragStartRow(row, $event)" @dragend="dropRow()"><i class="ti ti-grip-vertical"></i></span>
+                                                        <span class="reorder-btns">
+                                                            <button type="button" class="reorder-btn" @click="moveRow(idx, -1)" :disabled="idx === 0" aria-label="Subir"><i class="ti ti-chevron-up"></i></button>
+                                                            <button type="button" class="reorder-btn" @click="moveRow(idx, 1)" :disabled="idx === filteredRows.length - 1" aria-label="Bajar"><i class="ti ti-chevron-down"></i></button>
+                                                        </span>
+                                                    </div>
+                                                </template>
+                                            </td>
                                             <template x-for="col in resource.columns" :key="col.key">
                                                 <td :class="[col.class, col.hideSm && 'd-none d-md-table-cell']">
                                                     <template x-if="col.icon && !(col.imageKey && row[col.imageKey])"><i :class="row[col.key] || 'ti ti-lock-square-rounded'" class="me-1 fs-2"></i></template>
@@ -299,7 +318,7 @@
                                             </td>
                                         </tr>
                                     </template>
-                                    <tr x-show="!filteredRows.length"><td :colspan="resource.columns.length + 2" class="text-center text-secondary py-4">Sin registros</td></tr>
+                                    <tr x-show="!filteredRows.length"><td :colspan="resource.columns.length + 3" class="text-center text-secondary py-4">Sin registros</td></tr>
                                 </tbody>
                             </table>
                         </div>

@@ -82,3 +82,20 @@
 .gallery-btn--danger { color: #c0262d; }
 .gallery-add { display: grid; place-items: center; aspect-ratio: 1; border: 1px dashed var(--tblr-border-color); border-radius: 8px; background: transparent; color: var(--tblr-secondary); font-size: .8125rem; cursor: pointer; text-align: center; }
 .gallery-add:hover { border-color: var(--tblr-primary); color: var(--tblr-primary); }
+
+/* Ordenar registros arrastrando */
+.drag-cell { width: 1%; padding-right: 0 !important; }
+.drag-handle { display: grid; place-items: center; width: 2rem; height: 2.5rem; border-radius: 6px; color: var(--tblr-secondary); font-size: 1.35rem; cursor: grab; }
+.drag-handle:hover { background: var(--tblr-bg-surface-secondary); color: var(--tblr-body-color); }
+.drag-handle:active { cursor: grabbing; }
+.reorder-btns { display: none; flex-direction: column; }
+.reorder-btn { display: grid; place-items: center; width: 2rem; height: 1.6rem; padding: 0; border: 1px solid var(--tblr-border-color); background: var(--tblr-bg-surface); color: var(--tblr-body-color); cursor: pointer; }
+.reorder-btn:first-child { border-radius: 6px 6px 0 0; }
+.reorder-btn:last-child { border-radius: 0 0 6px 6px; border-top: 0; }
+.reorder-btn:disabled { opacity: .35; cursor: default; }
+tr.is-dragging-row td { background: rgba(var(--tblr-primary-rgb), .08) !important; }
+/* En pantallas táctiles (sin arrastre nativo) se usan flechas */
+@media (hover: none) {
+    .drag-handle { display: none; }
+    .reorder-btns { display: flex; }
+}

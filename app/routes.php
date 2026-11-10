@@ -448,6 +448,27 @@ Flight::group('/api/admin', function () {
         Flight::json(['id' => $id], 201);
     });
 
+    // Reordenar arrastrando en el listado: recibe todos los ids en el nuevo orden
+    Flight::route('POST /r/@name:[a-z_]+/order', function (string $name) use ($resource) {
+        $res = $resource($name);
+        $ids = array_map('intval', (array) (body()['ids'] ?? []));
+        $current = array_map('intval', db()->query("SELECT id FROM {$res['table']}")->fetchAll(PDO::FETCH_COLUMN));
+        sort($current);
+        $check = $ids;
+        sort($check);
+        if ($check !== $current) {
+            Flight::jsonHalt(['error' => 'La lista cambió mientras la ordenabas. Recarga la página e inténtalo de nuevo.'], 409);
+        }
+        $pdo = db();
+        $pdo->beginTransaction();
+        $st = $pdo->prepare("UPDATE {$res['table']} SET sort = ? WHERE id = ?");
+        foreach ($ids as $i => $id) {
+            $st->execute([$i + 1, $id]);
+        }
+        $pdo->commit();
+        Flight::json(['ok' => true]);
+    });
+
     Flight::route('PUT /r/@name:[a-z_]+/@id:[0-9]+', function (string $name, string $id) use ($resource, $fetchRow, $imageFields) {
         $res = $resource($name);
         $data = body();

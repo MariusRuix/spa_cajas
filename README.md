@@ -117,6 +117,8 @@ En **Panel → Configuración → Correo** activa el envío, escribe a quién av
 
 ## Fotos de productos (galería)
 
+**Orden en el sitio:** en el listado de Catálogo o Servicios arrastra el ícono ⠿ de cada fila (en celular, usa las flechas ▲▼). El orden se guarda solo y es el que se ve en el sitio. Con una búsqueda activa no se puede reordenar.
+
 Cada producto admite **hasta 20 fotos**. En el formulario del producto (Panel → Catálogo → Editar):
 
 - **Agregar fotos**: selecciona o arrastra varias a la vez (JPG, PNG, WEBP o GIF, máx. 5 MB cada una). También se puede agregar una foto por URL.

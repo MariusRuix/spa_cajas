@@ -281,6 +281,58 @@ document.addEventListener('alpine:init', () => {
             return this.rows.filter(r => this.resource.search.some(k => String(r[k] ?? '').toLowerCase().includes(q)));
         },
 
+        // ---------- Ordenar arrastrando ----------
+        dragRowId: null,
+        orderChanged: false,
+
+        get canReorder() { return !this.search.trim() && this.rows.length > 1; },
+
+        dragStartRow(row, e) {
+            this.dragRowId = row.id;
+            this.orderChanged = false;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', String(row.id));
+            const tr = e.target.closest('tr');
+            if (tr) e.dataTransfer.setDragImage(tr, 20, 20);
+        },
+
+        dragOverRow(target, e) {
+            if (this.dragRowId === null || target.id === this.dragRowId) return;
+            const from = this.rows.findIndex(r => r.id === this.dragRowId);
+            let to = this.rows.findIndex(r => r.id === target.id);
+            const box = e.currentTarget.getBoundingClientRect();
+            const after = e.clientY > box.top + box.height / 2;
+            if (after && to < from) to++;
+            if (!after && to > from) to--;
+            if (from === to) return;
+            this.rows.splice(to, 0, this.rows.splice(from, 1)[0]);
+            this.orderChanged = true;
+        },
+
+        dropRow() {
+            if (this.dragRowId === null) return;
+            this.dragRowId = null;
+            if (this.orderChanged) { this.orderChanged = false; this.saveOrder(); }
+        },
+
+        moveRow(idx, delta) {
+            const to = idx + delta;
+            if (to < 0 || to >= this.rows.length) return;
+            this.rows.splice(to, 0, this.rows.splice(idx, 1)[0]);
+            this.saveOrder();
+        },
+
+        async saveOrder() {
+            this.rows.forEach((r, i) => { r.sort = i + 1; });
+            try {
+                await api('POST', `/api/admin/r/${this.resourceKey}/order`, { ids: this.rows.map(r => r.id) });
+                this.toast('Orden guardado');
+            } catch (e) {
+                this.toast(e.message, 'error');
+                this.load();
+            }
+        },
+
         cell(row, col) {
             if (col.icon) return '';
             const v = String(row[col.key] ?? '');
