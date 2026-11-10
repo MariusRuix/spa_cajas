@@ -1,22 +1,27 @@
 <?php
 /**
- * Configuración de Royal Vault.
+ * Configuración POR DEFECTO de Royal Vault.
+ *
+ * Este archivo se puede reemplazar en cada despliegue: NO pongas aquí claves ni valores
+ * propios de un servidor. Lo que cambie entre Laragon y Hostinger va en
+ * app/config.local.php (ver app/config.local.example.php), que nunca se sube ni se reemplaza.
+ *
  * Este archivo NO debe ser accesible desde el navegador (app/.htaccess lo bloquea).
  */
 return [
-    // Pon false en producción (Hostinger) para no mostrar errores en pantalla.
-    'debug' => true,
+    // En producción va en false. En Laragon pon 'debug' => true en config.local.php.
+    'debug' => false,
 
     // Ruta del archivo SQLite. La carpeta storage/ debe tener permisos de escritura.
     'db_path' => dirname(__DIR__) . '/storage/database.sqlite',
 
-    // Clave para crear el PRIMER usuario administrador en /admin.
-    // Solo funciona mientras no exista ningún usuario. Cámbiala por una propia.
-    'setup_key' => '15c490c065e852473ab352701cdd7e9a',
+    // Clave para crear el PRIMER usuario administrador en /admin (solo mientras no exista ninguno).
+    // Se define en config.local.php; vacía = instalación deshabilitada.
+    'setup_key' => '',
 
-    // Llave para cifrar datos sensibles en la BD (contraseña SMTP).
-    // Genérala una sola vez; si la cambias tendrás que volver a capturar la contraseña del correo.
-    'app_key' => 'b586a1f305255a7b219af0f45c55c4c77f54154bb181fceb9ae1227c9a4e35f4',
+    // Llave para cifrar datos sensibles en la BD (contraseña SMTP). Se define en config.local.php.
+    // Si la cambias tendrás que volver a capturar la contraseña del correo.
+    'app_key' => '',
 
     // Sesión
     'session_name' => 'rv_session',

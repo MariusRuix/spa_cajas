@@ -10,7 +10,12 @@ require BASE_PATH . '/app/Database.php';
 require BASE_PATH . '/app/helpers.php';
 require BASE_PATH . '/app/Mailer.php';
 
+// Valores por defecto (se reemplazan en cada despliegue) + valores propios de este servidor
+// (app/config.local.php: claves, debug; nunca se sube ni se reemplaza).
 $config = require BASE_PATH . '/app/config.php';
+if (is_file(BASE_PATH . '/app/config.local.php')) {
+    $config = array_replace($config, (array) require BASE_PATH . '/app/config.local.php');
+}
 
 // ---- Errores ---------------------------------------------------------------
 error_reporting(E_ALL);
