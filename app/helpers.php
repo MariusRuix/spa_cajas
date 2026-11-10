@@ -111,7 +111,7 @@ function current_user(): ?array
     if (empty($_SESSION['user_id'])) {
         return null;
     }
-    $st = db()->prepare('SELECT id, name, email, role, session_version FROM users WHERE id = ?');
+    $st = db()->prepare('SELECT id, name, email, role, is_owner, session_version FROM users WHERE id = ?');
     $st->execute([$_SESSION['user_id']]);
     $user = $st->fetch();
     // Usuario eliminado, o su contraseña/rol cambió desde otra sesión: se cierra esta sesión.
@@ -120,6 +120,7 @@ function current_user(): ?array
         return null;
     }
     unset($user['session_version']);
+    $user['is_owner'] = (int) $user['is_owner'] === 1;
     return $user;
 }
 

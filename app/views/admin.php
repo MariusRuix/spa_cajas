@@ -461,7 +461,7 @@
                             </table>
                         </div>
                         <div class="card-footer text-secondary small">
-                            <strong>Administrador:</strong> acceso completo. <strong>Editor:</strong> mensajes, catálogo y servicios; no ve Configuración, Correo ni Usuarios. <strong>Principal</strong> (<i class="ti ti-crown"></i>): no se puede eliminar ni quitarle el rol, y solo él puede editar su cuenta.
+                            <strong>Administrador:</strong> acceso completo. <strong>Editor:</strong> mensajes, catálogo y servicios; no ve Configuración, Correo ni Usuarios.<span x-show="user.is_owner"> <strong>Principal</strong> (<i class="ti ti-crown"></i>): eres tú; no se te puede eliminar ni quitar el rol, solo tú editas tu cuenta y los demás administradores no te ven en esta lista.</span>
                         </div>
                     </div>
                 </div>

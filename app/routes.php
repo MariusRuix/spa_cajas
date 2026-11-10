@@ -322,8 +322,10 @@ Flight::group('/api/admin', function () {
     $adminCount = fn(): int => (int) db()->query("SELECT COUNT(*) FROM users WHERE role = 'admin'")->fetchColumn();
 
     Flight::route('GET /users', function () {
+        // El administrador principal solo aparece en la lista para él mismo
+        $hideOwner = current_user()['is_owner'] ? '' : 'WHERE is_owner = 0';
         Flight::json([
-            'users' => db()->query('SELECT id, name, email, role, is_owner, created_at FROM users ORDER BY is_owner DESC, name')->fetchAll(),
+            'users' => db()->query("SELECT id, name, email, role, is_owner, created_at FROM users $hideOwner ORDER BY is_owner DESC, name")->fetchAll(),
             'roles' => roles(),
         ]);
     });
@@ -341,9 +343,9 @@ Flight::group('/api/admin', function () {
         $st = db()->prepare('SELECT * FROM users WHERE id = ?');
         $st->execute([$id]);
         $old = $st->fetch() ?: Flight::jsonHalt(['error' => 'Usuario no encontrado'], 404);
-        // El administrador principal solo puede editarse a sí mismo y siempre es administrador
+        // El administrador principal es invisible para los demás y solo él puede editarse
         if ((int) $old['is_owner'] === 1 && $id !== (int) $me['id']) {
-            Flight::jsonHalt(['error' => 'El administrador principal solo puede ser editado por él mismo.'], 403);
+            Flight::jsonHalt(['error' => 'Usuario no encontrado'], 404);
         }
         [$clean, $password] = $checkUser(body(), $id);
         if ((int) $old['is_owner'] === 1) {
@@ -381,7 +383,7 @@ Flight::group('/api/admin', function () {
             Flight::jsonHalt(['error' => 'Usuario no encontrado'], 404);
         }
         if ((int) $target['is_owner'] === 1) {
-            Flight::jsonHalt(['error' => 'El administrador principal no se puede eliminar.'], 403);
+            Flight::jsonHalt(['error' => 'Usuario no encontrado'], 404);
         }
         $role = $target['role'];
         if ($role === 'admin' && $adminCount() <= 1) {

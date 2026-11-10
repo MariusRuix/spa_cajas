@@ -85,7 +85,7 @@ En **Panel → Usuarios** (solo administradores) se crean, editan y eliminan cue
 | **Administrador** | Todo: mensajes, catálogo, servicios, Configuración (SEO, analítica, correo) y Usuarios. |
 | **Editor** | Mensajes, catálogo y servicios, y cambiar su propia contraseña. |
 
-- El primer usuario (creado con la `setup_key`) es el **administrador principal** (👑): nadie puede eliminarlo ni quitarle el rol, y solo él puede editar su cuenta (nombre, correo, contraseña).
+- El primer usuario (creado con la `setup_key`) es el **administrador principal** (👑): nadie puede eliminarlo ni quitarle el rol, y solo él puede editar su cuenta (nombre, correo, contraseña). Además es **invisible** para los demás administradores: no aparece en su lista de Usuarios.
 - Nadie puede eliminarse a sí mismo, quitarse el rol de administrador ni dejar el panel sin administradores.
 - Al eliminar un usuario, o cambiar su contraseña o su rol, sus sesiones abiertas se cierran solas.
 - Los permisos se validan en el servidor; ocultar el menú es solo comodidad.
