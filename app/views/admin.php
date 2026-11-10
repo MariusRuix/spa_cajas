@@ -442,7 +442,7 @@
                                                 <div class="d-flex align-items-center gap-2">
                                                     <span class="avatar avatar-sm rounded-circle bg-primary-lt" x-text="initials(u.name)"></span>
                                                     <div>
-                                                        <div class="fw-medium"><span x-text="u.name"></span> <span class="text-secondary small" x-show="u.id === user.id">(tú)</span></div>
+                                                        <div class="fw-medium"><span x-text="u.name"></span> <span class="text-secondary small" x-show="u.id === user.id">(tú)</span> <span class="badge bg-yellow-lt ms-1" x-show="!!+u.is_owner" title="No se puede eliminar ni quitarle el rol; solo él puede editar su cuenta"><i class="ti ti-crown me-1"></i>Principal</span></div>
                                                         <div class="small text-secondary d-md-none" x-text="u.email"></div>
                                                     </div>
                                                 </div>
@@ -451,8 +451,8 @@
                                             <td><span class="badge" :class="u.role === 'admin' ? 'bg-primary text-primary-fg' : 'bg-secondary-lt'" x-text="roles[u.role] || u.role"></span></td>
                                             <td>
                                                 <div class="d-flex gap-2 justify-content-end">
-                                                    <button class="btn btn-outline-primary btn-action" @click="openUser(u)" title="Editar"><i class="ti ti-pencil"></i><span class="d-none d-md-inline">Editar</span></button>
-                                                    <button class="btn btn-outline-danger btn-action" @click="askDelete('users', u)" :disabled="u.id === user.id" title="Eliminar"><i class="ti ti-trash"></i><span class="d-none d-md-inline">Eliminar</span></button>
+                                                    <button class="btn btn-outline-primary btn-action" @click="openUser(u)" :disabled="!!(+u.is_owner && u.id !== user.id)" title="Editar"><i class="ti ti-pencil"></i><span class="d-none d-md-inline">Editar</span></button>
+                                                    <button class="btn btn-outline-danger btn-action" @click="askDelete('users', u)" :disabled="!!(u.id === user.id || +u.is_owner)" title="Eliminar"><i class="ti ti-trash"></i><span class="d-none d-md-inline">Eliminar</span></button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -461,7 +461,7 @@
                             </table>
                         </div>
                         <div class="card-footer text-secondary small">
-                            <strong>Administrador:</strong> acceso completo. <strong>Editor:</strong> mensajes, catálogo y servicios; no ve Configuración, Correo ni Usuarios.
+                            <strong>Administrador:</strong> acceso completo. <strong>Editor:</strong> mensajes, catálogo y servicios; no ve Configuración, Correo ni Usuarios. <strong>Principal</strong> (<i class="ti ti-crown"></i>): no se puede eliminar ni quitarle el rol, y solo él puede editar su cuenta.
                         </div>
                     </div>
                 </div>
@@ -631,7 +631,7 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Rol</label>
-                                <select class="form-select" x-model="userForm.data.role" :disabled="userForm.data.id === user.id">
+                                <select class="form-select" x-model="userForm.data.role" :disabled="!!(userForm.data.id === user.id || userForm.data.is_owner)">
                                     <template x-for="(label, key) in roles" :key="key"><option :value="key" x-text="label" :selected="userForm.data.role === key"></option></template>
                                 </select>
                                 <div class="form-hint" x-show="userForm.data.id === user.id">No puedes cambiar tu propio rol.</div>

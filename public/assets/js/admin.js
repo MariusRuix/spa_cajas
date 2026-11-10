@@ -477,7 +477,7 @@ document.addEventListener('alpine:init', () => {
         openUser(u = null) {
             this.userForm = {
                 open: true, error: '',
-                data: u ? { id: u.id, name: u.name, email: u.email, role: u.role, password: '' }
+                data: u ? { id: u.id, name: u.name, email: u.email, role: u.role, is_owner: !!+u.is_owner, password: '' }
                         : { name: '', email: '', role: 'editor', password: '' },
             };
         },

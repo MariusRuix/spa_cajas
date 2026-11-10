@@ -44,6 +44,7 @@ final class Database
                 password_hash TEXT NOT NULL,
                 role TEXT NOT NULL DEFAULT 'admin',
                 session_version INTEGER NOT NULL DEFAULT 1,
+                is_owner INTEGER NOT NULL DEFAULT 0,
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
             CREATE TABLE IF NOT EXISTS settings (
@@ -107,6 +108,11 @@ final class Database
         }
         if (!in_array('session_version', $cols, true)) {
             $pdo->exec('ALTER TABLE users ADD COLUMN session_version INTEGER NOT NULL DEFAULT 1');
+        }
+        if (!in_array('is_owner', $cols, true)) {
+            // Administrador principal: el primer usuario creado queda protegido
+            $pdo->exec('ALTER TABLE users ADD COLUMN is_owner INTEGER NOT NULL DEFAULT 0');
+            $pdo->exec("UPDATE users SET is_owner = 1, role = 'admin' WHERE id = (SELECT MIN(id) FROM users)");
         }
     }
 

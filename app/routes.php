@@ -118,7 +118,7 @@ Flight::route('POST /api/setup', function () {
     if ($errors) {
         Flight::jsonHalt(['error' => reset($errors)], 422);
     }
-    db()->prepare("INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, 'admin')")
+    db()->prepare("INSERT INTO users (name, email, password_hash, role, is_owner) VALUES (?, ?, ?, 'admin', 1)")
         ->execute([$clean['name'], strtolower($clean['email']), password_hash($password, PASSWORD_DEFAULT)]);
 
     login_user((int) db()->lastInsertId());
@@ -323,7 +323,7 @@ Flight::group('/api/admin', function () {
 
     Flight::route('GET /users', function () {
         Flight::json([
-            'users' => db()->query('SELECT id, name, email, role, created_at FROM users ORDER BY name')->fetchAll(),
+            'users' => db()->query('SELECT id, name, email, role, is_owner, created_at FROM users ORDER BY is_owner DESC, name')->fetchAll(),
             'roles' => roles(),
         ]);
     });
@@ -341,7 +341,14 @@ Flight::group('/api/admin', function () {
         $st = db()->prepare('SELECT * FROM users WHERE id = ?');
         $st->execute([$id]);
         $old = $st->fetch() ?: Flight::jsonHalt(['error' => 'Usuario no encontrado'], 404);
+        // El administrador principal solo puede editarse a sí mismo y siempre es administrador
+        if ((int) $old['is_owner'] === 1 && $id !== (int) $me['id']) {
+            Flight::jsonHalt(['error' => 'El administrador principal solo puede ser editado por él mismo.'], 403);
+        }
         [$clean, $password] = $checkUser(body(), $id);
+        if ((int) $old['is_owner'] === 1) {
+            $clean['role'] = 'admin';
+        }
 
         if ($old['role'] === 'admin' && $clean['role'] !== 'admin' && $adminCount() <= 1) {
             Flight::jsonHalt(['error' => 'Debe quedar al menos un administrador.'], 422);
@@ -367,12 +374,16 @@ Flight::group('/api/admin', function () {
         if ($id === (int) current_user()['id']) {
             Flight::jsonHalt(['error' => 'No puedes eliminar tu propio usuario.'], 422);
         }
-        $st = db()->prepare('SELECT role FROM users WHERE id = ?');
+        $st = db()->prepare('SELECT role, is_owner FROM users WHERE id = ?');
         $st->execute([$id]);
-        $role = $st->fetchColumn();
-        if ($role === false) {
+        $target = $st->fetch();
+        if (!$target) {
             Flight::jsonHalt(['error' => 'Usuario no encontrado'], 404);
         }
+        if ((int) $target['is_owner'] === 1) {
+            Flight::jsonHalt(['error' => 'El administrador principal no se puede eliminar.'], 403);
+        }
+        $role = $target['role'];
         if ($role === 'admin' && $adminCount() <= 1) {
             Flight::jsonHalt(['error' => 'Debe quedar al menos un administrador.'], 422);
         }
