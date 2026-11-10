@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T04:51:11.324735Z",
+  "title": "Design System: Royal Vault",
+  "extensions": {
+    "colorMeta": {
+      "night": {
+        "role": "neutral",
+        "displayName": "Azul noche",
+        "tonalRamp": [
+          "#01060f",
+          "#020b1d",
+          "#061430",
+          "#0b1d3f",
+          "#142a52",
+          "#1f3a6b",
+          "#3c5687",
+          "#8a95a6"
+        ]
+      },
+      "navy-800": {
+        "role": "primary",
+        "displayName": "Marino Royal Vault",
+        "tonalRamp": [
+          "#020b1d",
+          "#061430",
+          "#0b1d3f",
+          "#142a52",
+          "#1f3a6b",
+          "#3c5687",
+          "#7f93b8",
+          "#c9d3e6"
+        ]
+      },
+      "silver-300": {
+        "role": "secondary",
+        "displayName": "Plata",
+        "tonalRamp": [
+          "#4a5568",
+          "#6b7486",
+          "#8a95a6",
+          "#aab3c0",
+          "#c3cad5",
+          "#d3d9e2",
+          "#e4e8ee",
+          "#f2f4f7"
+        ]
+      },
+      "glint": {
+        "role": "accent",
+        "displayName": "Destello",
+        "tonalRamp": [
+          "#1f3a6b",
+          "#3c5687",
+          "#5d82c4",
+          "#7fa6ea",
+          "#9cc0ff",
+          "#b9d3ff",
+          "#d6e5ff",
+          "#eef4ff"
+        ]
+      },
+      "whatsapp": {
+        "role": "accent",
+        "displayName": "WhatsApp (solo acciones de WhatsApp)",
+        "tonalRamp": [
+          "#0b5d2c",
+          "#118a40",
+          "#1fb457",
+          "#25d366",
+          "#3ee07a",
+          "#6be89a",
+          "#a3f1c1",
+          "#d9fbe6"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "wordmark": {
+        "displayName": "Palabra de marca",
+        "purpose": "Solo 'ROYAL VAULT', Cinzel."
+      },
+      "display-hero": {
+        "displayName": "Titular de portada",
+        "purpose": "H1, Barlow Semi Condensed 700 en mayúsculas."
+      },
+      "display": {
+        "displayName": "Título de sección",
+        "purpose": "H2, Barlow Semi Condensed 700 en mayúsculas."
+      },
+      "title": {
+        "displayName": "Título de elemento",
+        "purpose": "Servicios y productos, Barlow Semi Condensed 600."
+      },
+      "caption": {
+        "displayName": "Leyenda entre filetes",
+        "purpose": "Mayúsculas espaciadas, Jost."
+      }
+    },
+    "shadows": [
+      {
+        "name": "emblem",
+        "value": "drop-shadow(0 24px 40px rgba(0,0,0,.55))",
+        "purpose": "Emblema sobre la portada."
+      },
+      {
+        "name": "panel",
+        "value": "0 24px 48px -32px rgba(11,29,63,.45)",
+        "purpose": "Formulario de contacto sobre fondo claro."
+      },
+      {
+        "name": "masthead",
+        "value": "0 10px 30px -18px rgba(0,0,0,.7)",
+        "purpose": "Cabecera fija."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(.16,1,.3,1)",
+        "purpose": "Transiciones de estado."
+      },
+      {
+        "name": "sheen",
+        "value": "2.6s .5s ease-out, una vez",
+        "purpose": "Destello sobre el emblema al cargar (único momento animado)."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tablet",
+        "value": "1024px"
+      },
+      {
+        "name": "menu",
+        "value": "860px"
+      },
+      {
+        "name": "mobile",
+        "value": "720px"
+      },
+      {
+        "name": "short-viewport",
+        "value": "max-height 800px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón WhatsApp",
+      "kind": "button",
+      "refersTo": "button-whatsapp",
+      "description": "Acción principal de contacto; solo para WhatsApp.",
+      "html": "<a class=\"ds-btn-wa\" href=\"#\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21\"/></svg>Emergencias 24/7 por WhatsApp</a>",
+      "css": ".ds-btn-wa{display:inline-flex;align-items:center;gap:.55rem;min-height:3.5rem;padding:0 1.75rem;background:#25d366;color:#020b1d;border-radius:4px;font:600 1rem/1.1 Jost,Futura,sans-serif;letter-spacing:.06em;text-decoration:none;transition:background-color .2s}.ds-btn-wa:hover{background:#3ee07a}.ds-btn-wa:focus-visible{outline:2px solid #9cc0ff;outline-offset:3px}"
+    },
+    {
+      "name": "Botón marino",
+      "kind": "button",
+      "refersTo": "button-navy",
+      "description": "Acciones generales: enviar, abrir mapa.",
+      "html": "<button class=\"ds-btn-navy\">Enviar solicitud</button>",
+      "css": ".ds-btn-navy{min-height:3rem;padding:0 1.4rem;border:0;background:#0b1d3f;color:#f2f4f7;border-radius:4px;font:500 .9375rem/1.1 Jost,Futura,sans-serif;letter-spacing:.06em;cursor:pointer;transition:background-color .2s}.ds-btn-navy:hover{background:#1f3a6b}.ds-btn-navy:focus-visible{outline:2px solid #1f3a6b;outline-offset:3px}"
+    },
+    {
+      "name": "Botón contorno",
+      "kind": "button",
+      "refersTo": "button-outline-on-light",
+      "description": "Acción secundaria sobre claro (servicios).",
+      "html": "<a class=\"ds-btn-outline\" href=\"#\">Solicitar apertura →</a>",
+      "css": ".ds-btn-outline{display:inline-flex;align-items:center;min-height:3rem;padding:0 1.4rem;border:1px solid #0b1d3f;color:#0b1d3f;border-radius:4px;font:500 .9375rem/1.1 Jost,Futura,sans-serif;letter-spacing:.06em;text-decoration:none;transition:background-color .2s,color .2s}.ds-btn-outline:hover{background:#0b1d3f;color:#f2f4f7}"
+    },
+    {
+      "name": "Leyenda entre filetes",
+      "kind": "custom",
+      "refersTo": "caption",
+      "description": "Mayúsculas espaciadas entre dos filetes, como en el logotipo.",
+      "html": "<p class=\"ds-caption\"><span>Cajas fuertes y cajas de seguridad · Yucatán</span></p>",
+      "css": ".ds-caption{display:flex;align-items:center;gap:1.1rem;margin:0;padding:1.5rem;background:#020b1d;color:#c3cad5;font:500 .8125rem/1.4 Jost,Futura,sans-serif;letter-spacing:.32em;text-transform:uppercase}.ds-caption:before,.ds-caption:after{content:'';flex:1;height:1px;background:currentColor;opacity:.55}"
+    },
+    {
+      "name": "Pilar",
+      "kind": "nav",
+      "description": "Enlace de la fila de cuatro pilares de la portada.",
+      "html": "<a class=\"ds-pillar\" href=\"#\"><svg width=\"36\" height=\"36\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"16\" rx=\"1.5\"/><circle cx=\"11\" cy=\"11\" r=\"3.6\"/><path d=\"M17.5 8.5v5M6 19v2M18 19v2\"/></svg><span class=\"ds-pillar__l\">Aperturas</span><span class=\"ds-pillar__h\">Emergencia 24/7 →</span></a>",
+      "css": ".ds-pillar{display:flex;flex-direction:column;align-items:center;gap:.45rem;padding:1.4rem 2rem 1.6rem;background:#020b1d;color:#c3cad5;text-decoration:none;font-family:Jost,Futura,sans-serif}.ds-pillar__l{color:#e4e8ee;font-size:.875rem;font-weight:500;letter-spacing:.3em;text-transform:uppercase}.ds-pillar__h{font-size:.8125rem;color:#8a95a6}.ds-pillar:hover{background:#06122a}.ds-pillar:hover .ds-pillar__h{color:#f2f4f7}"
+    },
+    {
+      "name": "Etiqueta de producto",
+      "kind": "chip",
+      "refersTo": "tag",
+      "html": "<span class=\"ds-tag\">Residencial</span>",
+      "css": ".ds-tag{display:inline-block;padding:.3rem .6rem;border-radius:2px;background:#e4e8ee;color:#0b1d3f;font:600 .6875rem/1.2 Jost,Futura,sans-serif;letter-spacing:.18em;text-transform:uppercase}"
+    },
+    {
+      "name": "Campo de texto",
+      "kind": "input",
+      "refersTo": "input",
+      "html": "<input class=\"ds-input\" placeholder=\"Ej. 999 123 4567\">",
+      "css": ".ds-input{min-height:3rem;padding:.8rem .9rem;background:#f2f4f7;border:1px solid #cfd6e0;border-radius:4px;color:#0b1d3f;font:400 1rem Jost,Futura,sans-serif}.ds-input::placeholder{color:#6b7486}.ds-input:focus{outline:none;background:#fff;border-color:#1f3a6b;box-shadow:0 0 0 3px rgba(31,58,107,.18)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "La hoja de marca en pantalla",
+    "overview": "Royal Vault se presenta como su propia hoja de marca: emblema plateado iluminado sobre azul noche, capitales romanas, leyendas entre filetes y cuatro pilares de servicio. Resguardo y seriedad; la urgencia vive en el verde de WhatsApp y en la barra de llamada en celular.",
+    "keyCharacteristics": [
+      "Azul noche y marino en regiones completas",
+      "Plata para tipo y filetes de 1px",
+      "Barlow Semi Condensed (titulares) + Jost (texto); Cinzel solo en la palabra de marca",
+      "Esquinas de 2-4px",
+      "Un solo momento animado: el destello del emblema"
+    ],
+    "rules": [
+      {
+        "name": "Verde solo para WhatsApp",
+        "body": "El verde nunca decora; marca únicamente acciones de WhatsApp, con texto azul noche.",
+        "section": "colors"
+      },
+      {
+        "name": "Sin etiquetas sobre titulares",
+        "body": "Las leyendas van debajo del titular, entre filetes.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Usar el emblema real como pieza principal",
+      "Tematizar foco, selección y scrollbar"
+    ],
+    "donts": [
+      "Texto con degradado",
+      "Volver al violeta o al crema",
+      "Afirmaciones sin dato real"
+    ]
+  }
+}
