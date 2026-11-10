@@ -1,0 +1,15 @@
+# Propios de cada servidor: nunca al repositorio ni al despliegue
+app/config.local.php
+storage/*
+!storage/.htaccess
+!storage/.gitignore
+!storage/database.copia.sqlite
+public/uploads/*
+!public/uploads/.htaccess
+
+# Paquetes y capturas generados
+deploy/
+_to_delete/
+.impeccable/review/
+temporal_images/
+Claude outputs/
