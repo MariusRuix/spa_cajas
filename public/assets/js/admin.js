@@ -79,8 +79,8 @@ const SETTING_GROUPS = [
     },
     {
         title: 'Analítica', icon: 'ti-chart-bar',
-        intro: 'Pega solo el ID; el código se agrega automáticamente. Los clics en WhatsApp/teléfono y los envíos del formulario se registran como eventos (<code>whatsapp_click</code>, <code>phone_click</code>, <code>generate_lead</code>).',
-        keys: ['ga4_id', 'gtm_id', 'gads_id', 'meta_pixel_id', 'tiktok_pixel_id', 'google_verification', 'bing_verification'],
+        intro: 'Pega solo el ID; el código se agrega automáticamente. Los clics en WhatsApp/teléfono y los envíos del formulario se registran como eventos (<code>whatsapp_click</code>, <code>phone_click</code>, <code>generate_lead</code>). Si pegas una conversión de Google Ads (<code>AW-…/…</code>), ese evento también se cuenta como conversión.',
+        keys: ['ga4_id', 'gtm_id', 'gads_id', 'gads_wa_label', 'gads_phone_label', 'gads_lead_label', 'meta_pixel_id', 'tiktok_pixel_id', 'google_verification', 'bing_verification'],
     },
     {
         title: 'Correo', icon: 'ti-mail', mail: true,

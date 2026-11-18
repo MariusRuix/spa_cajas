@@ -11,6 +11,15 @@ $gtm = preg_match('/^GTM-[A-Z0-9]{4,12}$/', $s['gtm_id'] ?? '') ? $s['gtm_id'] :
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<?= $gtm ?>" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <?php endif; ?>
 <?php else: ?>
+<?php
+// Conversiones de Google Ads por evento (send_to = AW-…/etiqueta), validadas con regex.
+$adsConv = [];
+foreach (['whatsapp_click' => 'gads_wa_label', 'phone_click' => 'gads_phone_label', 'generate_lead' => 'gads_lead_label'] as $ev => $key) {
+    if (preg_match('~^AW-\d{6,15}/[A-Za-z0-9_\-]{6,40}$~', $s[$key] ?? '')) {
+        $adsConv[$ev] = $s[$key];
+    }
+}
+?>
     <script>
         /* Eventos de conversión: clic en WhatsApp/teléfono y envío del formulario.
            Se envían a GA4/Ads (gtag), GTM (dataLayer), Meta y TikTok si están configurados. */
@@ -18,6 +27,8 @@ $gtm = preg_match('/^GTM-[A-Z0-9]{4,12}$/', $s['gtm_id'] ?? '') ? $s['gtm_id'] :
             params = params || {};
             if (window.dataLayer) dataLayer.push(Object.assign({ event: name }, params));
             if (typeof gtag === 'function') gtag('event', name, params);
+            var adsConv = <?= json_encode((object) $adsConv, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
+            if (typeof gtag === 'function' && adsConv[name]) gtag('event', 'conversion', { send_to: adsConv[name] });
             var fbMap = { whatsapp_click: 'Contact', phone_click: 'Contact', generate_lead: 'Lead' };
             if (typeof fbq === 'function' && fbMap[name]) fbq('track', fbMap[name], params);
             if (window.ttq && fbMap[name]) ttq.track(fbMap[name] === 'Lead' ? 'SubmitForm' : 'Contact', params);
